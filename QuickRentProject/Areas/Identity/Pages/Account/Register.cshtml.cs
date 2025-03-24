@@ -80,6 +80,26 @@ namespace QuickRentProject.Areas.Identity.Pages.Account
             [Display(Name = "Email")]
             public string Email { get; set; }
 
+            [Required(ErrorMessage = "Please enter your first name")]
+            [MaxLength(100, ErrorMessage = "First name cannot exceed 100 characters")]
+            [Display(Name = "First Name")]
+            public string FirstName { get; set; } // User's first name
+
+            [Required(ErrorMessage = "Please enter your last name")]
+            [MaxLength(100, ErrorMessage = "Last name cannot exceed 100 characters")]
+            [Display(Name = "Last Name")]
+            public string LastName { get; set; } // User's last name
+
+            [Phone(ErrorMessage = "Please enter a valid phone number")]
+            [Required(ErrorMessage = "Please enter your phone number")]
+            [MaxLength(15, ErrorMessage = "Phone number cannot exceed 15 characters")]
+            [Display(Name = "Phone Number")]
+            public string PhoneNumber { get; set; } // User's phone number
+
+            [Required(ErrorMessage = "Please select a role")]
+            [MaxLength(50, ErrorMessage = "Role cannot exceed 50 characters")]
+            [Display(Name = "Role")]
+            public string Role { get; set; } // User's role (e.g., Renter, Owner, Admin)
             /// <summary>
             ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
             ///     directly from your code. This API may change or be removed in future releases.
