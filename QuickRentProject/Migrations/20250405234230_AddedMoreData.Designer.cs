@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using QuickRentProjectDb.Data;
 
@@ -11,9 +12,11 @@ using QuickRentProjectDb.Data;
 namespace QuickRentProject.Migrations
 {
     [DbContext(typeof(QuickRentProjectDbContext))]
-    partial class QuickRentProjectDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250405234230_AddedMoreData")]
+    partial class AddedMoreData
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
