@@ -59,7 +59,7 @@ namespace QuickRentProject.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("PaymentId,Amount,PaymentDate,PaymentMethod,BookingId")] Payment payment)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
                 _context.Add(payment);
                 await _context.SaveChangesAsync();
@@ -98,7 +98,7 @@ namespace QuickRentProject.Controllers
                 return NotFound();
             }
 
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
                 try
                 {

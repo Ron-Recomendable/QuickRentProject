@@ -59,7 +59,7 @@ namespace QuickRentProject.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("ItemId,Name,Description,Category,Price,IsAvailable,Location,OwnerId")] Item item)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
                 _context.Add(item);
                 await _context.SaveChangesAsync();
@@ -98,7 +98,7 @@ namespace QuickRentProject.Controllers
                 return NotFound();
             }
 
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
                 try
                 {

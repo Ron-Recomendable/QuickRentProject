@@ -61,7 +61,7 @@ namespace QuickRentProject.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("ReviewId,Rating,Comment,ReviewDate,ItemId,UserId")] Review review)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
                 _context.Add(review);
                 await _context.SaveChangesAsync();
@@ -102,7 +102,7 @@ namespace QuickRentProject.Controllers
                 return NotFound();
             }
 
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
                 try
                 {
