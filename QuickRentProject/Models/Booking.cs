@@ -1,7 +1,7 @@
 ﻿using QuickRentProject.Areas.Identity.Data;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
-using QuickRentProject.Models.Validation;
+
 
 namespace QuickRentProject.Models
 {

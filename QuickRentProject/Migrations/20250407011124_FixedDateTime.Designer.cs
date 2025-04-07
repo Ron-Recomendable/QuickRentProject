@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using QuickRentProjectDb.Data;
 
@@ -11,9 +12,11 @@ using QuickRentProjectDb.Data;
 namespace QuickRentProject.Migrations
 {
     [DbContext(typeof(QuickRentProjectDbContext))]
-    partial class QuickRentProjectDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250407011124_FixedDateTime")]
+    partial class FixedDateTime
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -478,7 +481,7 @@ namespace QuickRentProject.Migrations
 
                     b.HasIndex("RenterId");
 
-                    b.ToTable("Booking", (string)null);
+                    b.ToTable("Booking");
                 });
 
             modelBuilder.Entity("QuickRentProject.Models.Item", b =>
@@ -523,7 +526,7 @@ namespace QuickRentProject.Migrations
 
                     b.HasIndex("OwnerId");
 
-                    b.ToTable("Item", (string)null);
+                    b.ToTable("Item");
                 });
 
             modelBuilder.Entity("QuickRentProject.Models.Payment", b =>
@@ -552,7 +555,7 @@ namespace QuickRentProject.Migrations
 
                     b.HasIndex("BookingId");
 
-                    b.ToTable("Payment", (string)null);
+                    b.ToTable("Payment");
                 });
 
             modelBuilder.Entity("QuickRentProject.Models.Review", b =>
@@ -587,7 +590,7 @@ namespace QuickRentProject.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Review", (string)null);
+                    b.ToTable("Review");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
