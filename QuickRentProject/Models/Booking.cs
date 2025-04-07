@@ -1,6 +1,7 @@
 ﻿using QuickRentProject.Areas.Identity.Data;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using QuickRentProject.Models.Validation;
 
 namespace QuickRentProject.Models
 {
@@ -19,7 +20,7 @@ namespace QuickRentProject.Models
 
         [Required(ErrorMessage = "Please enter the total cost")]
         [Column(TypeName = "decimal(10, 2)")]
-        [Range(0.01, 100000.00, ErrorMessage = "Total cost must be between 0.01 and 100,000.00")]
+        [Range(0.01, 10000.00, ErrorMessage = "Total cost must be between 0.01 and 10,000.00")]
         [Display(Name = "Total Cost")]
         public decimal TotalCost { get; set; } // Total cost of the booking
 
@@ -44,5 +45,6 @@ namespace QuickRentProject.Models
 
         // Navigation property
         public ICollection<Payment> Payments { get; set; } // One-to-many relationship with Payment
+     
     }
 }

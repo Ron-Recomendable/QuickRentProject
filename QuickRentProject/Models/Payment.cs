@@ -10,7 +10,7 @@ namespace QuickRentProject.Models
 
         [Required(ErrorMessage = "Please enter the amount")]
         [Column(TypeName = "decimal(10, 2)")]
-        [Range(0.01, 100000.00, ErrorMessage = "Amount must be between 0.01 and 100,000.00")]
+        [Range(0.01, 10000.00, ErrorMessage = "Amount must be between 0.01 and 10,000.00")]
         [Display(Name = "Amount")]
         public decimal Amount { get; set; } // Amount paid
 
