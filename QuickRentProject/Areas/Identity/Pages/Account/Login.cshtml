@@ -1,11 +1,19 @@
-﻿@page
+﻿
+
+@page
 @model LoginModel
 
+<style>
+    body {
+        background: #F4F4F4;
+    }
+
+</style>
 @{
     ViewData["Title"] = "Log in";
 }
 
-<h1>@ViewData["Title"]</h1>
+<h1>@ViewData["Title"]</h1> 
 <div class="row">
     <div class="col-md-4">
         <section>
@@ -47,7 +55,7 @@
         </section>
     </div>
     <div class="col-md-6 col-md-offset-2">
-        <section>
+        @* <section>
             <h3>Use another service to log in.</h3>
             <hr />
             @{
@@ -74,7 +82,7 @@
                     </form>
                 }
             }
-        </section>
+        </section> *@
     </div>
 </div>
 
