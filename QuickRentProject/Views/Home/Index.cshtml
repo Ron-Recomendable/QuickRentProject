@@ -1,8 +1,46 @@
-﻿@{
+﻿<style>
+    .browse-btn {
+        display: inline-block;
+        padding: 12px 25px;
+        background-color: #333;
+        color: #fff;
+        text-decoration: none;
+        border-radius: 5px;
+        margin-bottom: 20px;
+        margin-top: 20px;
+    }
+
+        .browse-btn:hover {
+            background-color: #555;
+            color: cyan;
+        }
+
+    .image-placeholder {
+        width: 80%;
+        max-width: 600px;
+        height: 350px;
+        margin: 0 auto;
+        background-color: #ccc;
+        border: 2px solid #999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #666;
+        font-size: 20px;
+    }
+    
+    body {
+        background: #F4F4F4;
+    }
+    
+</style>
+@{
     ViewData["Title"] = "Home Page";
 }
 
 <div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    <h1 class="display-4">Rent Anything, Anytime, Anywhere</h1>
+    <a href="https://localhost:7262/Items" class="browse-btn $cyan-300">Browse Items</a>
+    <div class="image-placeholder"></div>
+    @* <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p> *@
 </div>
