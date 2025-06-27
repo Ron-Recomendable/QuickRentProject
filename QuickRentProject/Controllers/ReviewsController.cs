@@ -20,10 +20,34 @@ namespace QuickRentProject.Controllers
         }
 
         // GET: Reviews
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string sortOrder, string searchString)
         {
-            var quickRentProjectDbContext = _context.Review.Include(r => r.Item).Include(r => r.User);
-            return View(await quickRentProjectDbContext.ToListAsync());
+            ViewData["NameSortParm"] = String.IsNullOrEmpty(sortOrder) ? "name_desc" : "";
+            ViewData["Category"] = sortOrder == "Category" ? "category_desc" : "Category";
+            ViewData["CurrentFilter"] = searchString;
+            var reviews = from i in _context.Item
+                           select i;
+            if (!String.IsNullOrEmpty(searchString))
+            {
+                reviews = reviews.Where(s => s.Name.Contains(searchString)
+                                       || s.Category.Contains(searchString));
+            }
+            switch (sortOrder)
+            {
+                case "name_desc":
+                    reviews = reviews.OrderByDescending(s => s.Name);
+                    break;
+                case "Date":
+                    reviews = reviews.OrderBy(s => s.Category);
+                    break;
+                case "date_desc":
+                    reviews = reviews.OrderByDescending(s => s.Category);
+                    break;
+                default:
+                    reviews = reviews.OrderBy(s => s.Name);
+                    break;
+            }
+            return View(await reviews.AsNoTracking().ToListAsync());
         }
 
         // GET: Reviews/Details/5

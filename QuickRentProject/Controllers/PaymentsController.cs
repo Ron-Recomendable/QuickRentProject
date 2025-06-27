@@ -20,10 +20,18 @@ namespace QuickRentProject.Controllers
         }
 
         // GET: Payments
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchString)
         {
-            var quickRentProjectDbContext = _context.Payment.Include(p => p.Booking);
-            return View(await quickRentProjectDbContext.ToListAsync());
+         
+            var payments = from i in _context.Item
+                       select i;
+            if (!String.IsNullOrEmpty(searchString))
+            {
+                payments = payments.Where(s => s.amount.Contains(searchString)
+                                       || s.Category.Contains(searchString));
+            }
+          
+            return View(await payments.AsNoTracking().ToListAsync());
         }
 
         // GET: Payments/Details/5

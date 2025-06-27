@@ -20,10 +20,34 @@ namespace QuickRentProject.Controllers
         }
 
         // GET: Items
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string sortOrder, string searchString)
         {
-            var quickRentProjectDbContext = _context.Item.Include(i => i.Owner);
-            return View(await quickRentProjectDbContext.ToListAsync());
+            ViewData["NameSortParm"] = String.IsNullOrEmpty(sortOrder) ? "name_desc" : "";
+            ViewData["Category"] = sortOrder == "Category" ? "category_desc" : "Category";
+            ViewData["CurrentFilter"] = searchString;
+            var item = from i in _context.Item
+                           select i;
+            if (!String.IsNullOrEmpty(searchString))
+            {
+                item = item.Where(s => s.Name.Contains(searchString)
+                                       || s.Category.Contains(searchString));
+            }
+            switch (sortOrder)
+            {
+                case "name_desc":
+                    item = item.OrderByDescending(s => s.Name);
+                    break;
+                case "Date":
+                    item = item.OrderBy(s => s.Category);
+                    break;
+                case "date_desc":
+                    item = item.OrderByDescending(s => s.Category);
+                    break;
+                default:
+                    item = item.OrderBy(s => s.Name);
+                    break;
+            }
+            return View(await item.AsNoTracking().ToListAsync());
         }
 
         // GET: Items/Details/5
