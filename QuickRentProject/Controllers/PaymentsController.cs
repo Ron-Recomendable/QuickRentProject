@@ -22,17 +22,20 @@ namespace QuickRentProject.Controllers
         // GET: Payments
         public async Task<IActionResult> Index(string searchString)
         {
-         
-            var payments = from i in _context.Item
+            
+            ViewData["CurrentFilter"] = searchString;
+            var payments = from i in _context.Payment
                        select i;
             if (!String.IsNullOrEmpty(searchString))
             {
-                payments = payments.Where(s => s.amount.Contains(searchString)
-                                       || s.Category.Contains(searchString));
+                payments = payments.Where(i =>
+                    i.Amount.ToString().Contains(searchString) ||
+                    i.PaymentId.ToString().Contains(searchString)
+                );
             }
-          
             return View(await payments.AsNoTracking().ToListAsync());
         }
+
 
         // GET: Payments/Details/5
         public async Task<IActionResult> Details(int? id)
@@ -91,7 +94,7 @@ namespace QuickRentProject.Controllers
                 return NotFound();
             }
             ViewData["BookingId"] = new SelectList(_context.Booking, "BookingId", "RenterId", payment.BookingId);
-            return View(payment);
+            return View(payment);   
         }
 
         // POST: Payments/Edit/5
@@ -145,7 +148,7 @@ namespace QuickRentProject.Controllers
             {
                 return NotFound();
             }
-
+            
             return View(payment);
         }
 

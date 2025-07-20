@@ -25,26 +25,26 @@ namespace QuickRentProject.Controllers
             ViewData["NameSortParm"] = String.IsNullOrEmpty(sortOrder) ? "name_desc" : "";
             ViewData["Category"] = sortOrder == "Category" ? "category_desc" : "Category";
             ViewData["CurrentFilter"] = searchString;
-            var reviews = from i in _context.Item
-                           select i;
+            var reviews = from r in _context.Review
+                           select r;
             if (!String.IsNullOrEmpty(searchString))
             {
-                reviews = reviews.Where(s => s.Name.Contains(searchString)
-                                       || s.Category.Contains(searchString));
+                reviews = reviews.Where(r => r.ItemId.ToString().Contains(searchString)
+                                       || r.UserId.Contains(searchString));
             }
             switch (sortOrder)
             {
                 case "name_desc":
-                    reviews = reviews.OrderByDescending(s => s.Name);
+                    reviews = reviews.OrderByDescending(r => r.Rating);
                     break;
                 case "Date":
-                    reviews = reviews.OrderBy(s => s.Category);
+                    reviews = reviews.OrderBy(r => r.ReviewDate);
                     break;
                 case "date_desc":
-                    reviews = reviews.OrderByDescending(s => s.Category);
+                    reviews = reviews.OrderByDescending(r => r.ReviewDate);
                     break;
                 default:
-                    reviews = reviews.OrderBy(s => s.Name);
+                    reviews = reviews.OrderBy(r => r.Rating);
                     break;
             }
             return View(await reviews.AsNoTracking().ToListAsync());

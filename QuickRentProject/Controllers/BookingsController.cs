@@ -25,30 +25,32 @@ namespace QuickRentProject.Controllers
             ViewData["NameSortParm"] = String.IsNullOrEmpty(sortOrder) ? "name_desc" : "";
             ViewData["Category"] = sortOrder == "Category" ? "category_desc" : "Category";
             ViewData["CurrentFilter"] = searchString;
-            var booking = from b in _context.Item
+            var booking = from b in _context.Booking
                        select b;
             if (!String.IsNullOrEmpty(searchString))
             {
-                booking = booking.Where(b => b.Name.Contains(searchString)
-                                       || b.Category.Contains(searchString));
+                booking = booking.Where(b => b.ItemId.ToString().Contains(searchString));
+                                       
             }
             switch (sortOrder)
             {
-                case "renterId":
-                    booking = booking.OrderByDescending(b => b.renterId);
+                case "ItemId":
+                    booking = booking.OrderByDescending(b => b.ItemId.ToString());
                     break;
                 case "Date":
-                    booking = booking.OrderBy(s => s.renterId);
+                    booking = booking.OrderBy(b => b.StartDate);
                     break;
                 case "date_desc":
-                    booking = booking.OrderByDescending(s => s.Category);
+                    booking = booking.OrderByDescending(b => b.EndDate);
                     break;
                 default:
-                    booking = booking.OrderBy(s => s.Name);
+                    booking = booking.OrderBy(b => b.ItemId);
                     break;
             }
             return View(await booking.AsNoTracking().ToListAsync());
         }
+
+
 
         // GET: Bookings/Details/5
         public async Task<IActionResult> Details(int? id)
