@@ -2,6 +2,78 @@
     body {
         background: #F4F4F4;
     }
+    .button {
+        max-width: 200px;
+        max-height: 26px;
+        border-radius: 3px;
+    }
+       .button {
+        max-width: 36px;
+        max-height: 26px;
+        border-radius: 3px;
+    }
+    #vue-modern {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  border-radius: 6px;
+  overflow: hidden;
+  margin-top: 20px;
+}
+
+#vue-modern thead {
+  background-color: #f5f5f5;
+  font-weight: bold;
+}
+
+#vue-modern th,
+#vue-modern td {
+  padding: 10px 14px;
+  border-bottom: 1px solid #ddd;
+  font-size: 14px;
+}
+
+#vue-modern td:last-child {
+  display: flex;
+  justify-content: center;
+  gap: 2px;
+}
+
+#vue-modern .vue-btn {
+  border: none;
+  padding: 4px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+/* Hover Effects */
+#vue-modern .vue-btn.edit:hover {
+  background-color: #e0a800;
+}
+
+#vue-modern .vue-btn.details:hover {
+  background-color: #138496;
+}
+
+#vue-modern .vue-btn.delete:hover {
+  background-color: #c82333;
+}
+
+#vue-modern tbody tr:nth-child(odd) {
+  background-color: #F6F6F3; /* light grey */
+}
+
+#vue-modern tbody tr:nth-child(even) {
+  background-color: #ffffff; /* white */
+}
+#vue-modern tbody tr:hover {
+  background-color: #f1f1f1;
+}
 
 </style>
 @model IEnumerable<QuickRentProject.Models.Payment>
@@ -24,7 +96,7 @@
         </p>
     </div>
 </form>
-<table class="table">
+<table class="table"  id="vue-modern" v-show="items.length">
     <thead>
         <tr>
             <th>
@@ -58,9 +130,9 @@
                 @Html.DisplayFor(modelItem => item.Booking.RenterId)
             </td>
             <td>
-               <a asp-action="Edit" asp-route-id="@item.ItemId"><img src="~/images/edit.jpg" alt="Alternate Text" /></a> |
-                <a asp-action="Details" asp-route-id="@item.ItemId"><img src="~/images/Details.jpg" alt="Alternate Text" /></a> |
-                <a asp-action="Delete" asp-route-id="@item.ItemId"><img src="~/images/Delete.jpg" alt="Alternate Text" /></a>
+               <a asp-action="Edit" asp-route-id="@item.PaymentId" class="vue-btn edit"><img class="button" src="~/images/edit.jpg" alt="Alternate Text" /></a> 
+                <a asp-action="Details" asp-route-id="@item.PaymentId" class="vue-btn details"><img class="button" src="~/images/Details.jpg" alt="Alternate Text" /></a> 
+                <a asp-action="Delete" asp-route-id="@item.PaymentId" class="vue-btn delete"><img class="button" src="~/images/Delete.jpg" alt="Alternate Text" /></a>
             </td>
         </tr>
 }
