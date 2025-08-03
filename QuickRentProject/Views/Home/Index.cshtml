@@ -1,19 +1,32 @@
 ﻿<style>
-    .browse-btn {
-        display: inline-block;
-        padding: 12px 25px;
-        background-color: #333;
-        color: #fff;
-        text-decoration: none;
-        border-radius: 5px;
-        margin-bottom: 20px;
-        margin-top: 20px;
-    }
+    #container {
+    display: flex;
+    gap: 25px; /* Space between buttons */
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
 
-        .browse-btn:hover {
-            background-color: #555;
-            color: cyan;
-        }
+.browse-btn {
+    padding: 15px 70px;
+    border-radius: 12px; /* Rounded corners */
+    background-color: #ffffff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* Soft shadow */
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: box-shadow 0.3s ease;
+     color: #000000; /* Text color black */
+    text-decoration: none;
+    border: 1px solid #ced4da;
+    
+}
+
+.browse-btn:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Slightly stronger shadow on hover */
+    color: black;
+}
+
 
     .image-placeholder {
         width: 80%;
@@ -38,9 +51,13 @@
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
+<div class="text-center" >
     <h1 class="display-4">Rent Anything, Anytime, Anywhere</h1>
-    <a href="https://localhost:7262/Items" class="browse-btn $cyan-300">Browse Items</a>
+    <div id="container">
+    <a href="@Url.Action("Index", "Items")" class="browse-btn ">Browse Items</a>
+    <a href="@Url.Action("Create", "Bookings")" class="browse-btn ">Rent an Item</a>
+    <a href="@Url.Action("Create", "Reviews")" class="browse-btn">Write a Review</a>
+    </div>
     <div class="image-placeholder"></div>
     @* <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p> *@
 </div>
