@@ -1,9 +1,37 @@
-﻿
-
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
+    <style>
+        #logo {
+            margin-left: 50px;
+            color: black !important;
+        }
+        #logo:hover {
+                color: rgba(0, 0, 0, 0.05);
+            }
+
+        #nav-bar{
+           background-color: #e9ecef;
+            border-bottom: 2px solid #ced4da;
+        }
+
+         #footer{
+           background-color: #e9ecef;
+            border-top: 2px solid #ced4da;
+        }
+
+        .navbar-nav .nav-link:hover {
+            background-color: rgba(0, 0, 0, 0.05); 
+            border-radius: 8px;
+            transition: background-color 0.2s ease-in-out;
+            text-decoration: underline;
+        }
+
+
+    </style>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - QuickRentProject</title>
@@ -11,52 +39,73 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/QuickRentProject.styles.css" asp-append-version="true" />
 </head>
+
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm border-bottom box-shadow mb-3 bg-dark navbar-dark text-light" id="nav-bar">
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm  box-shadow mb-3 text-dark"  id="nav-bar">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">QuickRentProject</a>
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index" id="logo">QuickRentProject</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                    <ul class="navbar-nav ms-auto d-flex align-items-center">
+                        <li class="nav-item me-4 text-center">
+                            <a class="nav-link text-dark d-flex flex-column align-items-center" asp-area="" asp-controller="Home" asp-action="Index">
+                                <i class="bi bi-house-door mb-1" style="font-size: 1.2rem;"></i>
+                                <span>Home</span>
+                            </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                        <li class="nav-item me-4 text-center">
+                            <a class="nav-link text-dark d-flex flex-column align-items-center" asp-area="" asp-controller="Home" asp-action="Privacy">
+                                <i class="bi bi-shield-lock mb-1" style="font-size: 1.2rem;"></i>
+                                <span>Privacy</span>
+                            </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Items" asp-action="Index">Items</a>
+                        <li class="nav-item me-4 text-center">
+                            <a class="nav-link text-dark d-flex flex-column align-items-center" asp-area="" asp-controller="Items" asp-action="Index">
+                                <i class="bi bi-box-seam mb-1" style="font-size: 1.2rem;"></i>
+                                <span>Items</span>
+                            </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link " asp-area="" asp-controller="Bookings" asp-action="Index">Bookings</a>
+                        <li class="nav-item me-4 text-center">
+                            <a class="nav-link text-dark d-flex flex-column align-items-center" asp-area="" asp-controller="Bookings" asp-action="Index">
+                                <i class="bi bi-calendar2-check mb-1" style="font-size: 1.2rem;"></i>
+                                <span>Bookings</span>
+                            </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Payments" asp-action="Index">Payments</a>
+                        <li class="nav-item me-4 text-center">
+                            <a class="nav-link text-dark d-flex flex-column align-items-center" asp-area="" asp-controller="Payments" asp-action="Index">
+                                <i class="bi bi-credit-card mb-1" style="font-size: 1.2rem;"></i>
+                                <span>Payments</span>
+                            </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Reviews" asp-action="Index">Reviews</a>
+                        <li class="nav-item text-center">
+                            <a class="nav-link text-dark d-flex flex-column align-items-center" asp-area="" asp-controller="Reviews" asp-action="Index">
+                                <i class="bi bi-chat-left-text mb-1" style="font-size: 1.2rem;"></i>
+                                <span>Reviews</span>
+                            </a>
                         </li>
                     </ul>
-                    <partial name="_LoginPartial.cshtml"/>
+                    <partial name="_LoginPartial.cshtml" />
                 </div>
             </div>
         </nav>
     </header>
+
     <div class="container">
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
     </div>
 
-    <footer class="border-top footer text-muted bg-dark">
+    <footer class="footer text-muted" id="footer">
         <div class="container">
             &copy; 2025 - QuickRentProject - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>
     </footer>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>

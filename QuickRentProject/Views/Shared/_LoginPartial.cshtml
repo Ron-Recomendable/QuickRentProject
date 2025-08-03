@@ -4,6 +4,16 @@
 @inject SignInManager<QuickRentProjectUser> SignInManager
 @inject UserManager<QuickRentProjectUser> UserManager
 
+
+<style>
+    #register{
+    margin-left: 50px
+    }
+    #login {
+    margin-right: 50px;
+    }
+
+</style>
 <ul class="navbar-nav">
 @if (SignInManager.IsSignedIn(User))
 {
@@ -19,10 +29,10 @@
 else
 {
     <li class="nav-item">
-        <a class="nav-link text-light" id="register" asp-area="Identity" asp-page="/Account/Register">Register</a>
+        <a class="nav-link text-dark" id="register" asp-area="Identity" asp-page="/Account/Register">Register</a>
     </li>
     <li class="nav-item">
-        <a class="nav-link text-light" id="login" asp-area="Identity" asp-page="/Account/Login">Login</a>
+        <a class="nav-link text-dark" id="login" asp-area="Identity" asp-page="/Account/Login">Login</a>
     </li>
 }
 </ul>
