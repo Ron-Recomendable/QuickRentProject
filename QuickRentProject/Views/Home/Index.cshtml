@@ -1,34 +1,31 @@
 ﻿<style>
     #container {
-    display: flex;
-    gap: 25px;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-}
+        display: flex;
+        gap: 25px;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+    }
 
-.browse-btn {
-    margin-top:20px;
-    padding: 15px 70px;
-    border-radius: 12px; 
-    background-color: #ffffff;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    font-size: 16px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: box-shadow 0.3s ease;
-     color: black;
-    text-decoration: none;
-    border: 1px solid #ced4da;
-    
-}
+    .browse-btn {
+        margin-top: 20px;
+        padding: 15px 70px;
+        border-radius: 12px;
+        background-color: #ffffff;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        font-size: 16px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: box-shadow 0.3s ease;
+        color: black;
+        text-decoration: none;
+        border: 1px solid #ced4da;
+    }
 
-.browse-btn:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    color: black;
-}
-
-
+        .browse-btn:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            color: black;
+        }
 
     .image-placeholder {
         width: 80%;
@@ -43,32 +40,29 @@
         color: #666;
         font-size: 20px;
     }
-    
+
     body {
         background: #F4F4F4;
     }
-    
-    #Header {
-    margin-top: 20px;
-    }
 
+    #Header {
+        margin-top: 20px;
+    }
 
     .auction-card {
         border-radius: 10px;
         overflow: hidden;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         margin-bottom: 20px;
     }
 
-    .auction-card img {
-        width: 100%;
-        height: 200px;
-        object-fit: cover;
-    }
-    .auction-card:hover {
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            transition: 0.2s ease-in-out
+        .auction-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
         }
+
+        
 
     .card-label {
         position: absolute;
@@ -80,113 +74,233 @@
         font-size: 0.9rem;
         border-radius: 5px;
     }
+
     .images {
-    text-decoration: none;
-    color: black;
+        text-decoration: none;
+        color: black;
     }
-    .images:hover {
-         color: black;
+
+        .images:hover {
+            color: black;
             transition: 0.2s ease-in-out
+        }
+
+    #shelf {
+        margin-top: 10px;
     }
 
-    #shelf{
-    margin-top: 10px;
+    .carousel-nav-btn {
+        background-color: #F4F4F4;
+        color: #333;
+        font-size: 24px;
+        width: 40px;
+        height: 40px;
+        border: none;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        /* box-shadow: 0 1px 3px rgba(0,0,0,0.1); */
+        cursor: pointer;
+        transition: background-color 0.2s ease-in-out;
     }
+        .carousel-nav-btn:hover {
+            background-color: #ddd;
+        }
 
+    .auction-card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        transition: 0.3s ease-in-out
+    }
 </style>
-
 
 @{
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center" >
+<div class="text-center">
     <h1 class="display-4" id="Header">Rent Anything, Anytime, Anywhere</h1>
     <div id="container">
-    <a href="@Url.Action("Index", "Items")" class="browse-btn ">Browse Items</a>
-    <a href="@Url.Action("Create", "Bookings")" class="browse-btn ">Rent an Item</a>
-    <a href="@Url.Action("Create", "Reviews")" class="browse-btn">Write a Review</a>
+        <a href="@Url.Action("Index", "Items")" class="browse-btn ">Browse Items</a>
+        <a href="@Url.Action("Create", "Bookings")" class="browse-btn ">Rent an Item</a>
+        <a href="@Url.Action("Create", "Reviews")" class="browse-btn">Write a Review</a>
     </div>
 
     <div class="container mt-5">
         <h3>Some items in our list</h3>
-        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4" id="shelf">
 
-            <!-- Card 1 -->
-            <div class="col">
-                <div class="card auction-card">
-                    <a href="@Url.Action("Index", "Items")" class="images">
-                    <div class="position-relative">
-                        <img src="~/images/Delete.jpg" class="card-img-top" alt="VIP Tickets" h>
-                        <div class="card-label">EA+</div>
+        <div class="d-flex align-items-center justify-content-between">
+   
+            <button class="carousel-nav-btn me-2" type="button" data-bs-target="#auctionCarousel" data-bs-slide="prev">
+                &#10094;
+            </button>
+
+            <div id="auctionCarousel" class="carousel slide w-100 mx-3" data-bs-ride="carousel">
+                <div class="carousel-inner">
+
+
+                    <div class="carousel-item active">
+                        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4" id="shelf">
+
+                            <div class="col">
+                                <div class="card auction-card">
+                                    <a href="@Url.Action("Index", "Items")" class="images">
+                                        <div class="position-relative">
+                                            <img src="~/images/Delete.jpg" class="card-img-top" alt="VIP Tickets">
+                                            <div class="card-label">EA+</div>
+                                        </div>
+                                        <div class="card-body">
+                                            <p class="text-muted mb-1">Waikato | Closes: Thu, 7 Aug</p>
+                                            <h6 class="card-title">VIP Warriors Tickets for 4 - Support a Kiwi in need</h6>
+                                            <p class="card-text">Bid & help Rachel get her life back</p>
+                                            <p class="text-success small">🚚 Free shipping</p>
+                                            <p class="fw-bold">Reserve met<br>$1,020</p>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+
+                          
+                            <div class="col">
+                                <div class="card auction-card">
+                                    <a href="@Url.Action("Index", "Items")" class="images">
+                                        <div class="position-relative">
+                                            <img src="~/images/Delete.jpg" class="card-img-top" alt="Cardrona Hotel">
+                                            <div class="card-label">EA+</div>
+                                        </div>
+                                        <div class="card-body">
+                                            <p class="text-muted mb-1">Otago | Listed: Thu, 3 Jul</p>
+                                            <h6 class="card-title">Cardrona Hotel for sale</h6>
+                                            <p class="card-text">Deadline sale by 15 Aug</p>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div class="col">
+                                <div class="card auction-card">
+                                    <a href="@Url.Action("Index", "Items")" class="images">
+                                        <div class="position-relative">
+                                            <img src="~/images/Details.jpg" class="card-img-top" alt="Ferrari SF90">
+                                            <div class="card-label">EA+</div>
+                                        </div>
+                                        <div class="card-body">
+                                            <p class="text-muted mb-1">Auckland | Private seller</p>
+                                            <h6 class="card-title">2023 Ferrari SF90 Spider</h6>
+                                            <p class="card-text">3,104km</p>
+                                            <p class="fw-bold">Asking price: $899,990</p>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+
+       
+                            <div class="col">
+                                <div class="card auction-card">
+                                    <a href="@Url.Action("Index", "Items")" class="images">
+                                        <div class="position-relative">
+                                            <img src="~/images/edit.jpg" class="card-img-top" alt="Wellington Boat Cafe">
+                                            <div class="card-label">EA+</div>
+                                        </div>
+                                        <div class="card-body">
+                                            <p class="text-muted mb-1">Wellington | Listed: Tue, 10 Jun</p>
+                                            <h6 class="card-title">Iconic Wellington boat cafe</h6>
+                                            <p class="fw-bold">$190,000 or near offer</p>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <p class="text-muted mb-1">Waikato &nbsp;|&nbsp; Closes: Thu, 7 Aug</p>
-                        <h6 class="card-title">VIP Warriors Tickets for 4 - Support a Kiwi in need</h6>
-                        <p class="card-text">Bid & help Rachel get her life back</p>
-                        <p class="text-success small">🚚 Free shipping</p>
-                        <p class="fw-bold">Reserve met<br>$1,020</p>
+
+                    <div class="carousel-item active">
+                        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4" id="shelf">
+
+                        
+                            <div class="col">
+                                <div class="card auction-card">
+                                    <a href="@Url.Action("Index", "Items")" class="images">
+                                        <div class="position-relative">
+                                            <img src="~/images/Delete.jpg" class="card-img-top" alt="VIP Tickets">
+                                            <div class="card-label">EA+</div>
+                                        </div>
+                                        <div class="card-body">
+                                            <p class="text-muted mb-1">Waikato | Closes: Thu, 7 Aug</p>
+                                            <h6 class="card-title">VIP Warriors Tickets for 4 - Support a Kiwi in need</h6>
+                                            <p class="card-text">Bid & help Rachel get her life back</p>
+                                            <p class="text-success small">🚚 Free shipping</p>
+                                            <p class="fw-bold">Reserve met<br>$1,020</p>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+
+                   
+                            <div class="col">
+                                <div class="card auction-card">
+                                    <a href="@Url.Action("Index", "Items")" class="images">
+                                        <div class="position-relative">
+                                            <img src="~/images/Delete.jpg" class="card-img-top" alt="Cardrona Hotel">
+                                            <div class="card-label">EA+</div>
+                                        </div>
+                                        <div class="card-body">
+                                            <p class="text-muted mb-1">Otago | Listed: Thu, 3 Jul</p>
+                                            <h6 class="card-title">Cardrona Hotel for sale</h6>
+                                            <p class="card-text">Deadline sale by 15 Aug</p>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div class="col">
+                                <div class="card auction-card">
+                                    <a href="@Url.Action("Index", "Items")" class="images">
+                                        <div class="position-relative">
+                                            <img src="~/images/Details.jpg" class="card-img-top" alt="Ferrari SF90">
+                                            <div class="card-label">EA+</div>
+                                        </div>
+                                        <div class="card-body">
+                                            <p class="text-muted mb-1">Auckland | Private seller</p>
+                                            <h6 class="card-title">2023 Ferrari SF90 Spider</h6>
+                                            <p class="card-text">3,104km</p>
+                                            <p class="fw-bold">Asking price: $899,990</p>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+
+
+                            <div class="col">
+                                <div class="card auction-card">
+                                    <a href="@Url.Action("Index", "Items")" class="images">
+                                        <div class="position-relative">
+                                            <img src="~/images/edit.jpg" class="card-img-top" alt="Wellington Boat Cafe">
+                                            <div class="card-label">EA+</div>
+                                        </div>
+                                        <div class="card-body">
+                                            <p class="text-muted mb-1">Wellington | Listed: Tue, 10 Jun</p>
+                                            <h6 class="card-title">Iconic Wellington boat cafe</h6>
+                                            <p class="fw-bold">$190,000 or near offer</p>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+
+                        </div>
                     </div>
-                    </a>
+
                 </div>
             </div>
 
-            <!-- Card 2 -->
-            <div class="col">
-                <div class="card auction-card">
-                    <a href="@Url.Action("Index", "Items")" class="images">
-                    <div class="position-relative">
-                        <img src="~/images/Delete.jpg" class="card-img-top" alt="Cardrona Hotel">
-                        <div class="card-label">EA+</div>
-                    </div>
-                    <div class="card-body">
-                        <p class="text-muted mb-1">Otago &nbsp;|&nbsp; Listed: Thu, 3 Jul</p>
-                        <h6 class="card-title">Cardrona Hotel for sale</h6>
-                        <p class="card-text">Deadline sale by 15 Aug</p>
-                    </div>
-                    </a>
-                </div>
-            </div>
-
-            <!-- Card 3 -->
-            <div class="col">
-                <div class="card auction-card">
-                    <a href="@Url.Action("Index", "Items")" class="images">
-                    <div class="position-relative">
-                        <img src="~/images/Details.jpg" class="card-img-top" alt="Ferrari SF90">
-                        <div class="card-label">EA+</div>
-                    </div>
-                    <div class="card-body">
-                        <p class="text-muted mb-1">Auckland &nbsp;|&nbsp; Private seller</p>
-                        <h6 class="card-title">2023 Ferrari SF90 Spider</h6>
-                        <p class="card-text">3,104km</p>
-                        <p class="fw-bold">Asking price: $899,990</p>
-                    </div>
-                    </a>
-                </div>
-            </div>
-
-            <!-- Card 4 -->
-            <div class="col">
-                <div class="card auction-card">
-                    <a href="@Url.Action("Index", "Items")" class="images">
-                    <div class="position-relative">
-                        <img src="~/images/edit.jpg" class="card-img-top" alt="Wellington Boat Cafe">
-                        <div class="card-label">EA+</div>
-                    </div>
-                    <div class="card-body">
-                        <p class="text-muted mb-1">Wellington &nbsp;|&nbsp; Listed: Tue, 10 Jun</p>
-                        <h6 class="card-title">Iconic Wellington boat cafe</h6>
-                        <p class="fw-bold">$190,000 or near offer</p>
-                    </div>
-                    </a>
-                </div>
-            </div>
-
+          
+            <button class="carousel-nav-btn ms-2" type="button" data-bs-target="#auctionCarousel" data-bs-slide="next">
+                &#10095;
+            </button>
         </div>
     </div>
-    
 
 
-    @* <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p> *@
+
+
 </div>
