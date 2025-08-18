@@ -31,6 +31,7 @@ public class QuickRentProjectUser : IdentityUser
     [MaxLength(50, ErrorMessage = "Role cannot exceed 50 characters")]
     [Display(Name = "Role")]
     public string Role { get; set; } // User's role (e.g., Renter, Owner)
+    public byte[]? ProfilePicture { get; set; }
 
     // Navigation properties
     public ICollection<Item> Items { get; set; } // One-to-many relationship with Item (for Owners)

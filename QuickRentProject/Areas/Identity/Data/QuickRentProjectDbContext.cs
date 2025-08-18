@@ -36,6 +36,7 @@ public class QuickRentProjectDbContext : IdentityDbContext<QuickRentProjectUser>
                 PhoneNumber = "531531413",
                 Role = "Renter",
                 PasswordHash = hasher.HashPassword(null, "Pheobe123_"),
+                ProfilePicture = null
             },
             new QuickRentProjectUser
             {
@@ -50,6 +51,7 @@ public class QuickRentProjectDbContext : IdentityDbContext<QuickRentProjectUser>
                 PhoneNumber = "4211614135",
                 Role = "Owner",
                 PasswordHash = hasher.HashPassword(null, "Rivka123_"),
+                ProfilePicture = null,
             },
             new QuickRentProjectUser
             {
@@ -64,6 +66,7 @@ public class QuickRentProjectDbContext : IdentityDbContext<QuickRentProjectUser>
                 PhoneNumber = "7415135315",
                 Role = "Renter",
                 PasswordHash = hasher.HashPassword(null, "Alianna123_"),
+                ProfilePicture = null
             },
             new QuickRentProjectUser
             {
@@ -78,6 +81,7 @@ public class QuickRentProjectDbContext : IdentityDbContext<QuickRentProjectUser>
                 PhoneNumber = "631641431",
                 Role = "Renter",
                 PasswordHash = hasher.HashPassword(null, "Carolyn123_"),
+                ProfilePicture = null
             },
             new QuickRentProjectUser
             {
@@ -92,6 +96,7 @@ public class QuickRentProjectDbContext : IdentityDbContext<QuickRentProjectUser>
                 PhoneNumber = "5551234567",
                 Role = "Owner",
                 PasswordHash = hasher.HashPassword(null, "Damian123_"),
+                ProfilePicture = null
             },
             new QuickRentProjectUser
             {
@@ -106,6 +111,7 @@ public class QuickRentProjectDbContext : IdentityDbContext<QuickRentProjectUser>
                 PhoneNumber = "5552345678",
                 Role = "Renter",
                 PasswordHash = hasher.HashPassword(null, "Elara123_"),
+                ProfilePicture = null
             },
             new QuickRentProjectUser
             {
@@ -120,6 +126,7 @@ public class QuickRentProjectDbContext : IdentityDbContext<QuickRentProjectUser>
                 PhoneNumber = "5553456789",
                 Role = "Renter",
                 PasswordHash = hasher.HashPassword(null, "Gregory123_"),
+                ProfilePicture = null
             },
             new QuickRentProjectUser
             {
@@ -134,6 +141,7 @@ public class QuickRentProjectDbContext : IdentityDbContext<QuickRentProjectUser>
                 PhoneNumber = "5554567890",
                 Role = "Owner",
                 PasswordHash = hasher.HashPassword(null, "Hazel123_"),
+                ProfilePicture = null
             },
             new QuickRentProjectUser
             {
@@ -148,6 +156,7 @@ public class QuickRentProjectDbContext : IdentityDbContext<QuickRentProjectUser>
                 PhoneNumber = "5555678901",
                 Role = "Renter",
                 PasswordHash = hasher.HashPassword(null, "Ivan123_"),
+                ProfilePicture = null
             },
             new QuickRentProjectUser
             {
@@ -162,6 +171,7 @@ public class QuickRentProjectDbContext : IdentityDbContext<QuickRentProjectUser>
                 PhoneNumber = "5556789012",
                 Role = "Owner",
                 PasswordHash = hasher.HashPassword(null, "Jasmine123_"),
+                ProfilePicture = null
             }
         );
     }
