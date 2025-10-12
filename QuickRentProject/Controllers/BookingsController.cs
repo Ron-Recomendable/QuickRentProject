@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using QuickRentProject.Models;
 using QuickRentProjectDb.Data;
+using Microsoft.AspNetCore.Authorization;
 
 namespace QuickRentProject.Controllers
 {
@@ -22,35 +23,65 @@ namespace QuickRentProject.Controllers
         // GET: Bookings
         public async Task<IActionResult> Index(string sortOrder, string searchString)
         {
-            ViewData["NameSortParm"] = String.IsNullOrEmpty(sortOrder) ? "name_desc" : "";
-            ViewData["Category"] = sortOrder == "Category" ? "category_desc" : "Category";
+            // Track the current filter and sort selection for the view
             ViewData["CurrentFilter"] = searchString;
-            var booking = from b in _context.Booking
-                       select b;
-            if (!String.IsNullOrEmpty(searchString))
+            ViewData["CurrentSort"] = string.IsNullOrEmpty(sortOrder) ? "start_asc" : sortOrder;
+
+            IQueryable<Booking> booking = _context.Booking
+                .Include(b => b.Item)
+                .Include(b => b.Renter);
+
+            if (!string.IsNullOrEmpty(searchString))
             {
-                booking = booking.Where(b => b.ItemId.ToString().Contains(searchString));
-                                       
+                // Keep the existing behavior (search by ItemId) and allow simple status search
+                booking = booking.Where(b =>
+                    b.ItemId.ToString().Contains(searchString) ||
+                    (b.Status != null && b.Status.Contains(searchString)));
             }
-            switch (sortOrder)
+
+            switch (ViewData["CurrentSort"] as string)
             {
-                case "ItemId":
-                    booking = booking.OrderByDescending(b => b.ItemId.ToString());
+                case "start_desc":
+                    booking = booking.OrderByDescending(b => b.StartDate);
                     break;
-                case "Date":
-                    booking = booking.OrderBy(b => b.StartDate);
+                case "end_asc":
+                    booking = booking.OrderBy(b => b.EndDate);
                     break;
-                case "date_desc":
+                case "end_desc":
                     booking = booking.OrderByDescending(b => b.EndDate);
                     break;
+                case "cost_asc":
+                    booking = booking.OrderBy(b => b.TotalCost);
+                    break;
+                case "cost_desc":
+                    booking = booking.OrderByDescending(b => b.TotalCost);
+                    break;
+                case "status_asc":
+                    booking = booking.OrderBy(b => b.Status);
+                    break;
+                case "status_desc":
+                    booking = booking.OrderByDescending(b => b.Status);
+                    break;
+                case "item_asc":
+                    booking = booking.OrderBy(b => b.Item.Category);
+                    break;
+                case "item_desc":
+                    booking = booking.OrderByDescending(b => b.Item.Category);
+                    break;
+                case "renter_asc":
+                    booking = booking.OrderBy(b => b.RenterId);
+                    break;
+                case "renter_desc":
+                    booking = booking.OrderByDescending(b => b.RenterId);
+                    break;
+                case "start_asc":
                 default:
-                    booking = booking.OrderBy(b => b.ItemId);
+                    booking = booking.OrderBy(b => b.StartDate);
                     break;
             }
+
             return View(await booking.AsNoTracking().ToListAsync());
         }
-
-
 
         // GET: Bookings/Details/5
         public async Task<IActionResult> Details(int? id)
@@ -73,6 +104,7 @@ namespace QuickRentProject.Controllers
         }
 
         // GET: Bookings/Create
+        [Authorize(Roles = "Admin,Renter")]
         public IActionResult Create()
         {
             ViewData["ItemId"] = new SelectList(_context.Item, "ItemId", "Category");
@@ -84,6 +116,7 @@ namespace QuickRentProject.Controllers
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
+        [Authorize(Roles = "Admin,Renter")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("BookingId,StartDate,EndDate,TotalCost,Status,RenterId,ItemId")] Booking booking)
         {
@@ -99,6 +132,7 @@ namespace QuickRentProject.Controllers
         }
 
         // GET: Bookings/Edit/5
+        [Authorize(Roles = "Admin,Renter")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -120,6 +154,7 @@ namespace QuickRentProject.Controllers
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
+        [Authorize(Roles = "Admin,Renter")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("BookingId,StartDate,EndDate,TotalCost,Status,RenterId,ItemId")] Booking booking)
         {
@@ -154,6 +189,7 @@ namespace QuickRentProject.Controllers
         }
 
         // GET: Bookings/Delete/5
+        [Authorize(Roles = "Admin,Renter")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -175,6 +211,7 @@ namespace QuickRentProject.Controllers
 
         // POST: Bookings/Delete/5
         [HttpPost, ActionName("Delete")]
+        [Authorize(Roles = "Admin,Renter")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {

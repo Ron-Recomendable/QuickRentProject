@@ -85,7 +85,9 @@
 <h1>Reviews</h1>
 
 <p>
-    <a asp-action="Create">Create New</a>
+    @if (!User.IsInRole("Owner")) {
+        <a asp-action="Create">Create New</a>
+    }
 </p>
 
 <form asp-action="Index" method="get">
@@ -138,9 +140,13 @@
                 @Html.DisplayFor(modelItem => item.User.Id)
             </td>
             <td>
-               <a asp-action="Edit" asp-route-id="@item.ReviewId" class="vue-btn edit"><img class="button" src="~/images/edit.jpg" alt="Alternate Text" class=/></a> 
-                <a asp-action="Details" asp-route-id="@item.ReviewId" class="vue-btn details"><img class="button" src="~/images/Details.jpg" alt="Alternate Text" /></a> 
-                <a asp-action="Delete" asp-route-id="@item.ReviewId" class="vue-btn delete"><img class="button" src="~/images/Delete.jpg" alt="Alternate Text" /></a>
+               @if (!User.IsInRole("Owner")) {
+                   <a asp-action="Edit" asp-route-id="@item.ReviewId" class="vue-btn edit"><img class="button" src="~/images/edit.jpg" alt="Alternate Text" class=/></a> 
+               }
+               <a asp-action="Details" asp-route-id="@item.ReviewId" class="vue-btn details"><img class="button" src="~/images/Details.jpg" alt="Alternate Text" /></a> 
+               @if (!User.IsInRole("Owner")) {
+                   <a asp-action="Delete" asp-route-id="@item.ReviewId" class="vue-btn delete"><img class="button" src="~/images/Delete.jpg" alt="Alternate Text" /></a>
+               }
             </td>
         </tr>
 }

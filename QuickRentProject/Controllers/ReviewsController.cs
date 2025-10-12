@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using QuickRentProject.Models;
 using QuickRentProjectDb.Data;
+using Microsoft.AspNetCore.Authorization;
 
 namespace QuickRentProject.Controllers
 {
@@ -71,6 +72,7 @@ namespace QuickRentProject.Controllers
         }
 
         // GET: Reviews/Create
+        [Authorize(Roles = "Admin,Renter")]
         public IActionResult Create()
         {
             ViewData["ItemId"] = new SelectList(_context.Item, "ItemId", "Category");
@@ -82,6 +84,7 @@ namespace QuickRentProject.Controllers
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
+        [Authorize(Roles = "Admin,Renter")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("ReviewId,Rating,Comment,ReviewDate,ItemId,UserId")] Review review)
         {
@@ -97,6 +100,7 @@ namespace QuickRentProject.Controllers
         }
 
         // GET: Reviews/Edit/5
+        [Authorize(Roles = "Admin,Renter")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -118,6 +122,7 @@ namespace QuickRentProject.Controllers
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
+        [Authorize(Roles = "Admin,Renter")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("ReviewId,Rating,Comment,ReviewDate,ItemId,UserId")] Review review)
         {
@@ -152,6 +157,7 @@ namespace QuickRentProject.Controllers
         }
 
         // GET: Reviews/Delete/5
+        [Authorize(Roles = "Admin,Renter")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -173,6 +179,7 @@ namespace QuickRentProject.Controllers
 
         // POST: Reviews/Delete/5
         [HttpPost, ActionName("Delete")]
+        [Authorize(Roles = "Admin,Renter")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {

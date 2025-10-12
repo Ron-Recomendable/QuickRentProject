@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using QuickRentProject.Models;
 using QuickRentProjectDb.Data;
+using Microsoft.AspNetCore.Authorization;
 
 namespace QuickRentProject.Controllers
 {
@@ -57,6 +58,7 @@ namespace QuickRentProject.Controllers
         }
 
         // GET: Payments/Create
+        [Authorize(Roles = "Admin,Renter")]
         public IActionResult Create()
         {
             ViewData["BookingId"] = new SelectList(_context.Booking, "BookingId", "RenterId");
@@ -67,6 +69,7 @@ namespace QuickRentProject.Controllers
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
+        [Authorize(Roles = "Admin,Renter")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("PaymentId,Amount,PaymentDate,PaymentMethod,BookingId")] Payment payment)
         {
@@ -81,6 +84,7 @@ namespace QuickRentProject.Controllers
         }
 
         // GET: Payments/Edit/5
+        [Authorize(Roles = "Admin,Renter")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -101,6 +105,7 @@ namespace QuickRentProject.Controllers
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
+        [Authorize(Roles = "Admin,Renter")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("PaymentId,Amount,PaymentDate,PaymentMethod,BookingId")] Payment payment)
         {
@@ -134,6 +139,7 @@ namespace QuickRentProject.Controllers
         }
 
         // GET: Payments/Delete/5
+        [Authorize(Roles = "Admin,Renter")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -154,6 +160,7 @@ namespace QuickRentProject.Controllers
 
         // POST: Payments/Delete/5
         [HttpPost, ActionName("Delete")]
+        [Authorize(Roles = "Admin,Renter")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {

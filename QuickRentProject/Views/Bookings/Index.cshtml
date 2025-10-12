@@ -80,13 +80,18 @@
 
 @{
     ViewData["Title"] = "Index";
+    var currentSort = (string)(ViewData["CurrentSort"] ?? "start_asc");
+    var currentFilter = (string)(ViewData["CurrentFilter"] ?? "");
 }
 
 <h1>Bookings</h1>
 
 <p>
-    <a asp-action="Create">Create New</a>
+    @if (!User.IsInRole("Owner")) {
+        <a asp-action="Create">Create New</a>
+    }
 </p>
+
 <form asp-action="Index" method="get">
     <div class="form-actions no-color">
         <p>
@@ -96,55 +101,38 @@
         </p>
     </div>
 </form>
-<table class="table"  id="vue-modern" v-show="items.length">
+
+
+
+<table class="table" id="vue-modern" v-show="items.length">
     <thead>
         <tr>
-            <th>
-                <a asp-action="Index" asp-route-sortOrder="@ViewData["DateSortParm"]">@Html.DisplayNameFor(model => model.StartDate)</a>
-            </th>
-            <th>
-                <a asp-action="Index" asp-route-sortOrder="@ViewData["DateSortParm"]">@Html.DisplayNameFor(model => model.EndDate)</a>
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.TotalCost)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Status)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Renter)
-            </th>
-            <th>
-                <a asp-action="Index" asp-route-sortOrder="@ViewData["DateSortParm"]">@Html.DisplayNameFor(model => model.Item)</a>
-            </th>
+            <th>@Html.DisplayNameFor(model => model.StartDate)</th>
+            <th>@Html.DisplayNameFor(model => model.EndDate)</th>
+            <th>@Html.DisplayNameFor(model => model.TotalCost)</th>
+            <th>@Html.DisplayNameFor(model => model.Status)</th>
+            <th>@Html.DisplayNameFor(model => model.Renter)</th>
+            <th>@Html.DisplayNameFor(model => model.Item)</th>
             <th></th>
         </tr>
     </thead>
     <tbody>
 @foreach (var item in Model) {
         <tr>
+            <td>@Html.DisplayFor(modelItem => item.StartDate)</td>
+            <td>@Html.DisplayFor(modelItem => item.EndDate)</td>
+            <td>@Html.DisplayFor(modelItem => item.TotalCost)</td>
+            <td>@Html.DisplayFor(modelItem => item.Status)</td>
+            <td>@Html.DisplayFor(modelItem => item.Renter.Id)</td>
+            <td>@Html.DisplayFor(modelItem => item.Item.Category)</td>
             <td>
-                @Html.DisplayFor(modelItem => item.StartDate)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.EndDate)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.TotalCost)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Status)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Renter.Id)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Item.Category)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.BookingId" class="vue-btn edit"><img class="button" src="~/images/edit.jpg" alt="Alternate Text" /></a> 
-                <a asp-action="Details" asp-route-id="@item.BookingId" class="vue-btn details"><img class="button" src="~/images/Details.jpg" alt="Alternate Text" /></a> 
-                <a asp-action="Delete" asp-route-id="@item.BookingId" class="vue-btn delete"><img class="button" src="~/images/Delete.jpg" alt="Alternate Text" /></a>
+                @if (!User.IsInRole("Owner")) {
+                    <a asp-action="Edit" asp-route-id="@item.BookingId" class="vue-btn edit"><img class="button" src="~/images/edit.jpg" alt="Alternate Text" /></a>
+                }
+                <a asp-action="Details" asp-route-id="@item.BookingId" class="vue-btn details"><img class="button" src="~/images/Details.jpg" alt="Alternate Text" /></a>
+                @if (!User.IsInRole("Owner")) {
+                    <a asp-action="Delete" asp-route-id="@item.BookingId" class="vue-btn delete"><img class="button" src="~/images/Delete.jpg" alt="Alternate Text" /></a>
+                }
             </td>
         </tr>
 }
