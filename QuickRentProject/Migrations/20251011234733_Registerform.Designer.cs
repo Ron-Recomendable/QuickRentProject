@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using QuickRentProjectDb.Data;
 
@@ -11,9 +12,11 @@ using QuickRentProjectDb.Data;
 namespace QuickRentProject.Migrations
 {
     [DbContext(typeof(QuickRentProjectDbContext))]
-    partial class QuickRentProjectDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251011234733_Registerform")]
+    partial class Registerform
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -248,7 +251,7 @@ namespace QuickRentProject.Migrations
                         {
                             Id = "1",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "5269c1db-0a76-41f2-954d-8b5c067f13ce",
+                            ConcurrencyStamp = "acc8cb9f-4aad-4114-9938-4c31b3c70869",
                             Email = "pheobe@example.com",
                             EmailConfirmed = true,
                             FirstName = "Pheobe",
@@ -256,11 +259,11 @@ namespace QuickRentProject.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "PHEOBE@EXAMPLE.COM",
                             NormalizedUserName = "PHOEBE@EXAMPLE.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEP9hnfTycNLDG44nXCwPV9CR1IGQsh3iD4UvIMzFLakqJKk8byOVmZhLGXxmlhethw==",
+                            PasswordHash = "AQAAAAIAAYagAAAAECt2eKKSA2qEboSAuW7DqsFZji2lrI1ARGRM+91XoLFY6EnaF5DE32WatcPv/UUYDQ==",
                             PhoneNumber = "531531413",
                             PhoneNumberConfirmed = false,
                             Role = "Renter",
-                            SecurityStamp = "e8df04ec-dde6-4276-ab53-cd58f13a9ee8",
+                            SecurityStamp = "58ed6d26-ded7-4ecc-a62c-62cb05873e27",
                             TwoFactorEnabled = false,
                             UserName = "Phoebe@example.com"
                         },
@@ -268,7 +271,7 @@ namespace QuickRentProject.Migrations
                         {
                             Id = "2",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "8483c89b-99e9-4794-b732-a2ffe6deefea",
+                            ConcurrencyStamp = "d8008ae6-d3df-4568-9eb2-53021004479d",
                             Email = "Rivka@example.com",
                             EmailConfirmed = true,
                             FirstName = "Rivka",
@@ -276,11 +279,11 @@ namespace QuickRentProject.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "RIVKA@EXAMPLE.COM",
                             NormalizedUserName = "RIVKA@EXAMPLE.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAECNXtEpTQEZs5GEj938t5Ov701ew0H72wtKoINtZrnqM4Jt55c+SNVD7FLitRePVJA==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEP2c2h3LBFBKBFWQVzWpmR3bpvpKEfUMTCPF33O7qqZl1EUtL+0OyAvjXOO/DYm0sQ==",
                             PhoneNumber = "4211614135",
                             PhoneNumberConfirmed = false,
                             Role = "Owner",
-                            SecurityStamp = "0674cd12-0e54-445a-b4ae-6f24614c4502",
+                            SecurityStamp = "10b74fc9-570d-4172-adf2-4dfa46b763ff",
                             TwoFactorEnabled = false,
                             UserName = "Rivka@example.com"
                         },
@@ -288,7 +291,7 @@ namespace QuickRentProject.Migrations
                         {
                             Id = "3",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "68d06abc-2973-442d-aa95-783ce8690195",
+                            ConcurrencyStamp = "56666711-9d86-401c-b4a2-63616bb50dac",
                             Email = "Alianna@example.com",
                             EmailConfirmed = true,
                             FirstName = "Alianna",
@@ -296,11 +299,11 @@ namespace QuickRentProject.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "ALIANNA@EXAMPLE.COM",
                             NormalizedUserName = "ALIANNA@EXAMPLE.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAENFpAgz4jp2nezLZEPILjPC6mClo+Fk4FeSpGRmiQy1oF9wBE6mX1ZdIDMQ8bm+gww==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEO+d13YIvv80/G0DAmp4vVKX2tu2CgYUBg7t4FczRR0IQ/A3sDVSU8SiepB/9Jm1+Q==",
                             PhoneNumber = "7415135315",
                             PhoneNumberConfirmed = false,
                             Role = "Renter",
-                            SecurityStamp = "1b6c0924-4968-44fa-9292-6b0e26552a3c",
+                            SecurityStamp = "ec8ad9c8-04b3-45cc-aa44-9055d59eb836",
                             TwoFactorEnabled = false,
                             UserName = "Alianna@example.com"
                         },
@@ -308,7 +311,7 @@ namespace QuickRentProject.Migrations
                         {
                             Id = "4",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "cb84fb69-e913-4ab3-93c6-6494b5ec4c89",
+                            ConcurrencyStamp = "dd038630-cba9-4529-bcb9-0f488e7b34c8",
                             Email = "Carolyn@example.com",
                             EmailConfirmed = true,
                             FirstName = "Carolyn",
@@ -316,11 +319,11 @@ namespace QuickRentProject.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "CAROLYN@EXAMPLE.COM",
                             NormalizedUserName = "CAROLYN@EXAMPLE.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEPCzTRuxLPbWvHMVfckYiZXCLtixfadVTiH6aykyRM9ty2hitDeiEsVWo8Yy7xgivg==",
+                            PasswordHash = "AQAAAAIAAYagAAAAELlHMa7jo2nVlWExmCwhX9xnNSU803s0G9CQ4xW6ysAhzxmQejjAJJIggc5Vxelyyg==",
                             PhoneNumber = "631641431",
                             PhoneNumberConfirmed = false,
                             Role = "Renter",
-                            SecurityStamp = "1d91166d-b19b-480d-a723-95ce638b645e",
+                            SecurityStamp = "fe3715b5-0d4c-44a6-aa11-ad51072abdad",
                             TwoFactorEnabled = false,
                             UserName = "Carolyn@example.com"
                         },
@@ -328,7 +331,7 @@ namespace QuickRentProject.Migrations
                         {
                             Id = "5",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "af2ed7e6-bfee-42dc-9a52-4630f41dd370",
+                            ConcurrencyStamp = "6a7dde38-c98f-45b1-9a3f-d779ec93f3bf",
                             Email = "Damian@example.com",
                             EmailConfirmed = true,
                             FirstName = "Damian",
@@ -336,11 +339,11 @@ namespace QuickRentProject.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "DAMIAN@EXAMPLE.COM",
                             NormalizedUserName = "DAMIAN@EXAMPLE.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEDsOO/Aadfb5nvmXcWHOz6QYzuHChkRF9ZyNXdRk2vu8NNbZTqJutq+D9TCo0F0WHw==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEATnv5ZKmZq1QtN/O9IyQXCkv6EM46cnzoF8V99GhzxY+gIpwjQUvTcCAc+8SZjZYw==",
                             PhoneNumber = "5551234567",
                             PhoneNumberConfirmed = false,
                             Role = "Owner",
-                            SecurityStamp = "2bdef713-f211-4f69-8e38-65c5a7b7f0d3",
+                            SecurityStamp = "3a03c885-f3c0-4446-970b-a821391bb00f",
                             TwoFactorEnabled = false,
                             UserName = "Damian@example.com"
                         },
@@ -348,7 +351,7 @@ namespace QuickRentProject.Migrations
                         {
                             Id = "6",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "9d7ef11b-e199-45eb-8eec-907f717d6732",
+                            ConcurrencyStamp = "bd460292-00ac-4022-8b30-a5e2522c6834",
                             Email = "Elara@example.com",
                             EmailConfirmed = true,
                             FirstName = "Elara",
@@ -356,11 +359,11 @@ namespace QuickRentProject.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "ELARA@EXAMPLE.COM",
                             NormalizedUserName = "ELARA@EXAMPLE.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEEw6OHVLsx4jtwxB2bb/cbH5aPRQYLRb+vA1XjEH38YeN8a57LtOCNMUbYiUB0ps+A==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEAz6AbFWSdTCu2mRLfzickVNVm1JHEhF+GFDpewwWWom3az8/Di2X7un5HE4nhupPw==",
                             PhoneNumber = "5552345678",
                             PhoneNumberConfirmed = false,
                             Role = "Renter",
-                            SecurityStamp = "14f6b6b9-8f61-4597-8699-4a5bdfb7ecb9",
+                            SecurityStamp = "f2388af8-65bb-4a11-be07-363eb16d2404",
                             TwoFactorEnabled = false,
                             UserName = "Elara@example.com"
                         },
@@ -368,7 +371,7 @@ namespace QuickRentProject.Migrations
                         {
                             Id = "7",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "ab711494-cd9c-4308-bcb6-8ba6fb4e824a",
+                            ConcurrencyStamp = "817630e0-22d2-4297-8ba7-1400e9626283",
                             Email = "Gregory@example.com",
                             EmailConfirmed = true,
                             FirstName = "Gregory",
@@ -376,11 +379,11 @@ namespace QuickRentProject.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "GREGORY@EXAMPLE.COM",
                             NormalizedUserName = "GREGORY@EXAMPLE.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAED1U1wpkEKjYxCH1bFULdMzvE1WkahrB2nDr3XXRMwLBB2jIu3rgOtI+1QH6bAyxpw==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEBfWQOl9onJ2YDFrOZEN+VkRrhXr/j8rN5Y6W+atPsRdkjEc3jlC6LQu7ejGFvZQGw==",
                             PhoneNumber = "5553456789",
                             PhoneNumberConfirmed = false,
                             Role = "Renter",
-                            SecurityStamp = "8fcb7a0a-b361-457b-a2d6-e6a68319f8e0",
+                            SecurityStamp = "866c6a33-a3cc-40fd-a6b3-e2739b96d248",
                             TwoFactorEnabled = false,
                             UserName = "Gregory@example.com"
                         },
@@ -388,7 +391,7 @@ namespace QuickRentProject.Migrations
                         {
                             Id = "8",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "a6d63b6d-0b1f-41c1-880a-128a1ef82feb",
+                            ConcurrencyStamp = "57a91747-8ad0-4338-a09a-192ddf244774",
                             Email = "Hazel@example.com",
                             EmailConfirmed = true,
                             FirstName = "Hazel",
@@ -396,11 +399,11 @@ namespace QuickRentProject.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "HAZEL@EXAMPLE.COM",
                             NormalizedUserName = "HAZEL@EXAMPLE.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEOoGzswHipTpP9Fv3u0NAHfoL5sZt1iQL5+d3/bsMeWAD6flgbVxfENMD3k4XDW9yw==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEIuZuvnQt+Ui3DRWLJ/JZCR7LpE4zQZZygJu6x14OfEKJjjmUT0933JD+lOKh+tI+g==",
                             PhoneNumber = "5554567890",
                             PhoneNumberConfirmed = false,
                             Role = "Owner",
-                            SecurityStamp = "208b718f-2758-4652-9ce2-8b7a4f7a6277",
+                            SecurityStamp = "885a9624-d996-473f-808b-292cb516f2d3",
                             TwoFactorEnabled = false,
                             UserName = "Hazel@example.com"
                         },
@@ -408,7 +411,7 @@ namespace QuickRentProject.Migrations
                         {
                             Id = "9",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "1f4cea2d-0bb6-4170-b505-a73c3a41930a",
+                            ConcurrencyStamp = "12e12bc1-3e4f-47e3-856c-18af4f6bfe8f",
                             Email = "Ivan@example.com",
                             EmailConfirmed = true,
                             FirstName = "Ivan",
@@ -416,11 +419,11 @@ namespace QuickRentProject.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "IVAN@EXAMPLE.COM",
                             NormalizedUserName = "IVAN@EXAMPLE.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEJ39uYgpHiNfh9rRsERa2jwQRhiIpJp8mNtkjmXQKL6cvxuUP7RDe4i8Z0YcAdDJRg==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEA/NBcKOOn0VDSR7zCUKBaG12M9ksH5Yl48TILka1nxyLlOYIOKFYR3Dq23dbZeD6g==",
                             PhoneNumber = "5555678901",
                             PhoneNumberConfirmed = false,
                             Role = "Renter",
-                            SecurityStamp = "68063479-7350-4593-b312-6170491110e5",
+                            SecurityStamp = "91318bfd-de14-4e08-ab80-1e0dd1d359db",
                             TwoFactorEnabled = false,
                             UserName = "Ivan@example.com"
                         },
@@ -428,7 +431,7 @@ namespace QuickRentProject.Migrations
                         {
                             Id = "10",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "7c499cd2-6c3c-4c0a-bcef-1bc437634357",
+                            ConcurrencyStamp = "fd619406-dea7-4999-8f4a-d2bdde1d6613",
                             Email = "Jasmine@example.com",
                             EmailConfirmed = true,
                             FirstName = "Jasmine",
@@ -436,11 +439,11 @@ namespace QuickRentProject.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "JASMINE@EXAMPLE.COM",
                             NormalizedUserName = "JASMINE@EXAMPLE.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEPV46WkSq++bQyPx8OuGg/M2S00fJL6rNh/17ZlJCu188zyYgkQLWYaNL0d84fQx6Q==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEIbW0tC1WKDWFsPaAhgnzv1xpDr/SmTHG634O8ewtquYvUhpaL+CJcstcoKTE8ONuA==",
                             PhoneNumber = "5556789012",
                             PhoneNumberConfirmed = false,
                             Role = "Owner",
-                            SecurityStamp = "d6bf2704-96f2-400c-a921-d7540eec910d",
+                            SecurityStamp = "0a42296d-6f5b-49b1-811b-2caaaf7b2bcf",
                             TwoFactorEnabled = false,
                             UserName = "Jasmine@example.com"
                         });

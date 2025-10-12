@@ -19,6 +19,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using QuickRentProject.Areas.Identity.Data;
+using System.Text.RegularExpressions;
 
 namespace QuickRentProject.Areas.Identity.Pages.Account
 {
@@ -75,11 +76,6 @@ namespace QuickRentProject.Areas.Identity.Pages.Account
             ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
             ///     directly from your code. This API may change or be removed in future releases.
             /// </summary>
-            [Required]
-            [EmailAddress]
-            [Display(Name = "Email")]
-            public string Email { get; set; }
-
             [Required(ErrorMessage = "Please enter your first name")]
             [MaxLength(100, ErrorMessage = "First name cannot exceed 100 characters")]
             [Display(Name = "First Name")]
@@ -90,10 +86,16 @@ namespace QuickRentProject.Areas.Identity.Pages.Account
             [Display(Name = "Last Name")]
             public string LastName { get; set; } // User's last name
 
-            [Phone(ErrorMessage = "Please enter a valid phone number")]
+            [Required(ErrorMessage = "Please enter your email address")]
+            [EmailAddress(ErrorMessage = "Please enter a valid email address")]
+            [MaxLength(100, ErrorMessage = "Email cannot exceed 100 characters")]
+            [Display(Name = "Email")]
+            public string Email { get; set; } // User's email address
+
             [Required(ErrorMessage = "Please enter your phone number")]
             [MaxLength(15, ErrorMessage = "Phone number cannot exceed 15 characters")]
             [Display(Name = "Phone Number")]
+            [RegularExpression(@"^\+64(2[0-9]|[3-9])\d{7,8}$", ErrorMessage = "Phone number must start with +64 and contain only digits (e.g. +64211234567 or +6491234567)")]
             public string PhoneNumber { get; set; } // User's phone number
 
             [Required(ErrorMessage = "Please select a role")]
