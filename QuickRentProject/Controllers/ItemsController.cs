@@ -28,6 +28,7 @@ namespace QuickRentProject.Controllers
             ViewData["NameSortParm"] = String.IsNullOrEmpty(sortOrder) ? "name_desc" : "";
             ViewData["Category"] = sortOrder == "Category" ? "category_desc" : "Category";
             ViewData["CurrentFilter"] = searchString;
+            ViewData["CurrentSort"] = string.IsNullOrEmpty(sortOrder) ? "name_asc" : sortOrder;
 
             IQueryable<Item> itemQuery = _context.Item.Include(i => i.Owner);
 
@@ -43,16 +44,26 @@ namespace QuickRentProject.Controllers
                 itemQuery = itemQuery.Where(s => s.Name.Contains(searchString)
                                        || s.Category.Contains(searchString));
             }
-            switch (sortOrder)
+
+            switch (ViewData["CurrentSort"] as string)
             {
+                case "name_asc":
+                    itemQuery = itemQuery.OrderBy(s => s.Name);
+                    break;
                 case "name_desc":
                     itemQuery = itemQuery.OrderByDescending(s => s.Name);
                     break;
-                case "Date":
+                case "category_asc":
                     itemQuery = itemQuery.OrderBy(s => s.Category);
                     break;
-                case "date_desc":
+                case "category_desc":
                     itemQuery = itemQuery.OrderByDescending(s => s.Category);
+                    break;
+                case "price_asc":
+                    itemQuery = itemQuery.OrderBy(s => s.Price);
+                    break;
+                case "price_desc":
+                    itemQuery = itemQuery.OrderByDescending(s => s.Price);
                     break;
                 default:
                     itemQuery = itemQuery.OrderBy(s => s.Name);
