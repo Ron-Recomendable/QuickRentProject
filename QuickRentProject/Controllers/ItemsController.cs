@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore;
 using QuickRentProject.Models;
 using QuickRentProjectDb.Data;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -72,56 +71,38 @@ namespace QuickRentProject.Controllers
             return View(await itemQuery.AsNoTracking().ToListAsync());
         }
 
-        // GET: Items/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var item = await _context.Item
-                .Include(i => i.Owner)
-                .FirstOrDefaultAsync(m => m.ItemId == id);
-            if (item == null)
-            {
-                return NotFound();
-            }
-
-            // Owners can only view their own items, Admin can view all
-            if (User.IsInRole("Owner") && !User.IsInRole("Admin"))
-            {
-                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                if (item.OwnerId != userId)
-                    return Forbid();
-            }
-
-            return View(item);
-        }
-
         // GET: Items/Create
         [Authorize(Roles = "Owner,Admin")]
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            ViewData["OwnerId"] = new SelectList(_context.Users, "Id", "Id");
+            var categories = new[]
+            {
+                "Electronics","Clothing","Groceries","Furniture","Appliances","Stationery",
+                "Toys & Games","Sports & Outdoor","Beauty & Health","Books & Media",
+                "Tools & Hardware","Home & Living","Automotive","Pet Supplies"
+            };
+            ViewData["CategoryList"] = new SelectList(categories);
+
+            // Fix owner to the current user (show name, post hidden OwnerId)
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var user = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId);
+            var ownerFullName = user != null ? $"{user.FirstName} {user.LastName}" : userId;
+
+            ViewData["OwnerFullName"] = ownerFullName;
+            ViewData["OwnerId"] = userId;
+
             return View();
         }
 
         // POST: Items/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Owner,Admin")]
         public async Task<IActionResult> Create([Bind("ItemId,Name,Description,Category,Price,IsAvailable,Location,OwnerId")] Item item)
         {
-            // Owners can only create items for themselves
-            if (User.IsInRole("Owner") && !User.IsInRole("Admin"))
-            {
-                var userId = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
-                item.OwnerId = userId;
-            }
+            // Always set OwnerId to the current user
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            item.OwnerId = userId;
 
             if (!ModelState.IsValid)
             {
@@ -129,7 +110,40 @@ namespace QuickRentProject.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["OwnerId"] = new SelectList(_context.Users, "Id", "Id", item.OwnerId);
+
+            var categories = new[]
+            {
+                "Electronics","Clothing","Groceries","Furniture","Appliances","Stationery",
+                "Toys & Games","Sports & Outdoor","Beauty & Health","Books & Media",
+                "Tools & Hardware","Home & Living","Automotive","Pet Supplies"
+            };
+            ViewData["CategoryList"] = new SelectList(categories, item.Category);
+
+            var user = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId);
+            ViewData["OwnerFullName"] = user != null ? $"{user.FirstName} {user.LastName}" : userId;
+            ViewData["OwnerId"] = userId;
+
+            return View(item);
+        }
+
+        // GET: Items/Details/5
+        [Authorize]
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var item = await _context.Item
+                .Include(i => i.Owner)
+                .FirstOrDefaultAsync(m => m.ItemId == id);
+            if (item == null) return NotFound();
+
+            // Owners can only view their own items, Admin can view all
+            if (User.IsInRole("Owner") && !User.IsInRole("Admin"))
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (item.OwnerId != userId) return Forbid();
+            }
+
             return View(item);
         }
 
@@ -137,50 +151,48 @@ namespace QuickRentProject.Controllers
         [Authorize(Roles = "Owner,Admin")]
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
-            var item = await _context.Item.FindAsync(id);
-            if (item == null)
-            {
-                return NotFound();
-            }
+            var item = await _context.Item.AsNoTracking().FirstOrDefaultAsync(i => i.ItemId == id);
+            if (item == null) return NotFound();
 
             // Owners can only edit their own items, Admin can edit all
             if (User.IsInRole("Owner") && !User.IsInRole("Admin"))
             {
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                if (item.OwnerId != userId)
-                    return Forbid();
+                if (item.OwnerId != userId) return Forbid();
             }
 
-            ViewData["OwnerId"] = new SelectList(_context.Users, "Id", "Id", item.OwnerId);
+            // Category dropdown (preselect current)
+            var categories = new[]
+            {
+                "Electronics","Clothing","Groceries","Furniture","Appliances","Stationery",
+                "Toys & Games","Sports & Outdoor","Beauty & Health","Books & Media",
+                "Tools & Hardware","Home & Living","Automotive","Pet Supplies"
+            };
+            ViewData["CategoryList"] = new SelectList(categories, item.Category);
+
+            // Owner full name (read-only in view)
+            var owner = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == item.OwnerId);
+            ViewData["OwnerFullName"] = owner != null ? $"{owner.FirstName} {owner.LastName}" : item.OwnerId;
+
             return View(item);
         }
 
         // POST: Items/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Owner,Admin")]
         public async Task<IActionResult> Edit(int id, [Bind("ItemId,Name,Description,Category,Price,IsAvailable,Location,OwnerId")] Item item)
         {
-            if (id != item.ItemId)
-            {
-                return NotFound();
-            }
+            if (id != item.ItemId) return NotFound();
 
             // Owners can only edit their own items, Admin can edit all
             if (User.IsInRole("Owner") && !User.IsInRole("Admin"))
             {
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 var dbItem = await _context.Item.AsNoTracking().FirstOrDefaultAsync(i => i.ItemId == id);
-                if (dbItem == null || dbItem.OwnerId != userId)
-                    return Forbid();
+                if (dbItem == null || dbItem.OwnerId != userId) return Forbid();
                 item.OwnerId = userId; // Prevent changing ownership
             }
 
@@ -193,18 +205,24 @@ namespace QuickRentProject.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!ItemExists(item.ItemId))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    if (!ItemExists(item.ItemId)) return NotFound();
+                    else throw;
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["OwnerId"] = new SelectList(_context.Users, "Id", "Id", item.OwnerId);
+
+            // Rebuild dropdowns on validation errors
+            var categories = new[]
+            {
+                "Electronics","Clothing","Groceries","Furniture","Appliances","Stationery",
+                "Toys & Games","Sports & Outdoor","Beauty & Health","Books & Media",
+                "Tools & Hardware","Home & Living","Automotive","Pet Supplies"
+            };
+            ViewData["CategoryList"] = new SelectList(categories, item.Category);
+
+            var owner = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == item.OwnerId);
+            ViewData["OwnerFullName"] = owner != null ? $"{owner.FirstName} {owner.LastName}" : item.OwnerId;
+
             return View(item);
         }
 
@@ -212,25 +230,18 @@ namespace QuickRentProject.Controllers
         [Authorize(Roles = "Owner,Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
             var item = await _context.Item
                 .Include(i => i.Owner)
                 .FirstOrDefaultAsync(m => m.ItemId == id);
-            if (item == null)
-            {
-                return NotFound();
-            }
+            if (item == null) return NotFound();
 
             // Owners can only delete their own items, Admin can delete all
             if (User.IsInRole("Owner") && !User.IsInRole("Admin"))
             {
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                if (item.OwnerId != userId)
-                    return Forbid();
+                if (item.OwnerId != userId) return Forbid();
             }
 
             return View(item);
@@ -243,17 +254,12 @@ namespace QuickRentProject.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var item = await _context.Item.FindAsync(id);
-            if (item == null)
-            {
-                return NotFound();
-            }
+            if (item == null) return NotFound();
 
-            // Owners can only delete their own items, Admin can delete all
             if (User.IsInRole("Owner") && !User.IsInRole("Admin"))
             {
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                if (item.OwnerId != userId)
-                    return Forbid();
+                if (item.OwnerId != userId) return Forbid();
             }
 
             _context.Item.Remove(item);
