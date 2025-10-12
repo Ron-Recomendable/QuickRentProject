@@ -7,10 +7,12 @@ using QuickRentProjectDb.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace QuickRentProject.Controllers
 {
+    [Authorize] // Require authentication for all actions
     public class ItemsController : Controller
     {
         private readonly QuickRentProjectDbContext _context;
@@ -26,29 +28,37 @@ namespace QuickRentProject.Controllers
             ViewData["NameSortParm"] = String.IsNullOrEmpty(sortOrder) ? "name_desc" : "";
             ViewData["Category"] = sortOrder == "Category" ? "category_desc" : "Category";
             ViewData["CurrentFilter"] = searchString;
-            var item = from i in _context.Item
-                           select i;
+
+            IQueryable<Item> itemQuery = _context.Item.Include(i => i.Owner);
+
+            // Owners see only their items, Admin sees all
+            if (User.IsInRole("Owner") && !User.IsInRole("Admin"))
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                itemQuery = itemQuery.Where(i => i.OwnerId == userId);
+            }
+
             if (!String.IsNullOrEmpty(searchString))
             {
-                item = item.Where(s => s.Name.Contains(searchString)
+                itemQuery = itemQuery.Where(s => s.Name.Contains(searchString)
                                        || s.Category.Contains(searchString));
             }
             switch (sortOrder)
             {
                 case "name_desc":
-                    item = item.OrderByDescending(s => s.Name);
+                    itemQuery = itemQuery.OrderByDescending(s => s.Name);
                     break;
                 case "Date":
-                    item = item.OrderBy(s => s.Category);
+                    itemQuery = itemQuery.OrderBy(s => s.Category);
                     break;
                 case "date_desc":
-                    item = item.OrderByDescending(s => s.Category);
+                    itemQuery = itemQuery.OrderByDescending(s => s.Category);
                     break;
                 default:
-                    item = item.OrderBy(s => s.Name);
+                    itemQuery = itemQuery.OrderBy(s => s.Name);
                     break;
             }
-            return View(await item.AsNoTracking().ToListAsync());
+            return View(await itemQuery.AsNoTracking().ToListAsync());
         }
 
         // GET: Items/Details/5
@@ -67,11 +77,19 @@ namespace QuickRentProject.Controllers
                 return NotFound();
             }
 
+            // Owners can only view their own items, Admin can view all
+            if (User.IsInRole("Owner") && !User.IsInRole("Admin"))
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (item.OwnerId != userId)
+                    return Forbid();
+            }
+
             return View(item);
         }
 
         // GET: Items/Create
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Owner,Admin")]
         public IActionResult Create()
         {
             ViewData["OwnerId"] = new SelectList(_context.Users, "Id", "Id");
@@ -84,8 +102,16 @@ namespace QuickRentProject.Controllers
         
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Owner,Admin")]
         public async Task<IActionResult> Create([Bind("ItemId,Name,Description,Category,Price,IsAvailable,Location,OwnerId")] Item item)
         {
+            // Owners can only create items for themselves
+            if (User.IsInRole("Owner") && !User.IsInRole("Admin"))
+            {
+                var userId = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
+                item.OwnerId = userId;
+            }
+
             if (!ModelState.IsValid)
             {
                 _context.Add(item);
@@ -97,7 +123,7 @@ namespace QuickRentProject.Controllers
         }
 
         // GET: Items/Edit/5
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Owner,Admin")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -110,6 +136,15 @@ namespace QuickRentProject.Controllers
             {
                 return NotFound();
             }
+
+            // Owners can only edit their own items, Admin can edit all
+            if (User.IsInRole("Owner") && !User.IsInRole("Admin"))
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (item.OwnerId != userId)
+                    return Forbid();
+            }
+
             ViewData["OwnerId"] = new SelectList(_context.Users, "Id", "Id", item.OwnerId);
             return View(item);
         }
@@ -120,11 +155,22 @@ namespace QuickRentProject.Controllers
         
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Owner,Admin")]
         public async Task<IActionResult> Edit(int id, [Bind("ItemId,Name,Description,Category,Price,IsAvailable,Location,OwnerId")] Item item)
         {
             if (id != item.ItemId)
             {
                 return NotFound();
+            }
+
+            // Owners can only edit their own items, Admin can edit all
+            if (User.IsInRole("Owner") && !User.IsInRole("Admin"))
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var dbItem = await _context.Item.AsNoTracking().FirstOrDefaultAsync(i => i.ItemId == id);
+                if (dbItem == null || dbItem.OwnerId != userId)
+                    return Forbid();
+                item.OwnerId = userId; // Prevent changing ownership
             }
 
             if (!ModelState.IsValid)
@@ -152,7 +198,7 @@ namespace QuickRentProject.Controllers
         }
 
         // GET: Items/Delete/5
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Owner,Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -168,21 +214,38 @@ namespace QuickRentProject.Controllers
                 return NotFound();
             }
 
+            // Owners can only delete their own items, Admin can delete all
+            if (User.IsInRole("Owner") && !User.IsInRole("Admin"))
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (item.OwnerId != userId)
+                    return Forbid();
+            }
+
             return View(item);
         }
 
         // POST: Items/Delete/5
-        
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Owner,Admin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var item = await _context.Item.FindAsync(id);
-            if (item != null)
+            if (item == null)
             {
-                _context.Item.Remove(item);
+                return NotFound();
             }
 
+            // Owners can only delete their own items, Admin can delete all
+            if (User.IsInRole("Owner") && !User.IsInRole("Admin"))
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (item.OwnerId != userId)
+                    return Forbid();
+            }
+
+            _context.Item.Remove(item);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
