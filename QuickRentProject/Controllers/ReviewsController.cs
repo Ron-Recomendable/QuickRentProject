@@ -23,26 +23,48 @@ namespace QuickRentProject.Controllers
         // GET: Reviews
         public async Task<IActionResult> Index(string sortOrder, string searchString)
         {
-            ViewData["NameSortParm"] = String.IsNullOrEmpty(sortOrder) ? "name_desc" : "";
-            ViewData["Category"] = sortOrder == "Category" ? "category_desc" : "Category";
             ViewData["CurrentFilter"] = searchString;
-            var reviews = from r in _context.Review
-                           select r;
+            ViewData["CurrentSort"] = string.IsNullOrEmpty(sortOrder) ? "rating_asc" : sortOrder;
+
+            IQueryable<Review> reviews = _context.Review
+                .Include(r => r.Item)
+                .Include(r => r.User);
+
             if (!String.IsNullOrEmpty(searchString))
             {
-                reviews = reviews.Where(r => r.ItemId.ToString().Contains(searchString)
-                                       || r.UserId.Contains(searchString));
+                reviews = reviews.Where(r =>
+                    r.ItemId.ToString().Contains(searchString) ||
+                    r.UserId.Contains(searchString) ||
+                    (r.Comment != null && r.Comment.Contains(searchString)) ||
+                    r.Rating.ToString().Contains(searchString) ||
+                    (r.Item != null && r.Item.Category.Contains(searchString)));
             }
-            switch (sortOrder)
+
+            switch (ViewData["CurrentSort"] as string)
             {
-                case "name_desc":
+                case "rating_asc":
+                    reviews = reviews.OrderBy(r => r.Rating);
+                    break;
+                case "rating_desc":
                     reviews = reviews.OrderByDescending(r => r.Rating);
                     break;
-                case "Date":
+                case "date_asc":
                     reviews = reviews.OrderBy(r => r.ReviewDate);
                     break;
                 case "date_desc":
                     reviews = reviews.OrderByDescending(r => r.ReviewDate);
+                    break;
+                case "item_asc":
+                    reviews = reviews.OrderBy(r => r.Item.Category);
+                    break;
+                case "item_desc":
+                    reviews = reviews.OrderByDescending(r => r.Item.Category);
+                    break;
+                case "user_asc":
+                    reviews = reviews.OrderBy(r => r.UserId);
+                    break;
+                case "user_desc":
+                    reviews = reviews.OrderByDescending(r => r.UserId);
                     break;
                 default:
                     reviews = reviews.OrderBy(r => r.Rating);

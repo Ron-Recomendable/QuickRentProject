@@ -7,74 +7,89 @@
         max-height: 26px;
         border-radius: 3px;
     }
-       .button {
+    .button {
         max-width: 36px;
         max-height: 26px;
         border-radius: 3px;
     }
+
     #vue-modern {
-  width: 100%;
-  border-collapse: collapse;
-  background: #fff;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  border-radius: 6px;
-  overflow: hidden;
-  margin-top: 20px;
-}
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      border-radius: 6px;
+      overflow: hidden;
+      margin-top: 20px;
+    }
 
-#vue-modern thead {
-  background-color: #f5f5f5;
-  font-weight: bold;
-}
+    #vue-modern thead { background-color: #f5f5f5; font-weight: bold; }
+    #vue-modern th, #vue-modern td { padding: 10px 14px; border-bottom: 1px solid #ddd; font-size: 14px; }
+    #vue-modern td:last-child { display: flex; justify-content: center; gap: 2px; }
 
-#vue-modern th,
-#vue-modern td {
-  padding: 10px 14px;
-  border-bottom: 1px solid #ddd;
-  font-size: 14px;
-}
+    #vue-modern .vue-btn {
+      border: none;
+      padding: 4px 6px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-#vue-modern td:last-child {
-  display: flex;
-  justify-content: center;
-  gap: 2px;
-}
+    #vue-modern .vue-btn.edit:hover { background-color: #e0a800; }
+    #vue-modern .vue-btn.details:hover { background-color: #138496; }
+    #vue-modern .vue-btn.delete:hover { background-color: #c82333; }
 
-#vue-modern .vue-btn {
-  border: none;
-  padding: 4px 6px;
-  border-radius: 4px;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
+    #vue-modern tbody tr:nth-child(odd) { background-color: #F6F6F3; }
+    #vue-modern tbody tr:nth-child(even) { background-color: #ffffff; }
+    #vue-modern tbody tr:hover { background-color: #f1f1f1; }
 
+    /* Sort dropdown styles (match Items) */
+    .sort-dropdown { position: relative; }
+    .sort-dropdown .sort-btn {
+        background: #0078D4;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        font-size: 1.1rem;
+        font-weight: 500;
+        padding: 0.5rem 1rem;
+        cursor: pointer;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.07);
+        transition: background 0.2s ease, color 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .sort-dropdown .sort-btn:hover { background: #0a74c1; }
+    .sort-icon { display: inline-flex; width: 16px; height: 16px; }
+    .caret { display: inline-flex; width: 10px; height: 10px; }
 
-/* Hover Effects */
-#vue-modern .vue-btn.edit:hover {
-  background-color: #e0a800;
-}
-
-#vue-modern .vue-btn.details:hover {
-  background-color: #138496;
-}
-
-#vue-modern .vue-btn.delete:hover {
-  background-color: #c82333;
-}
-
-#vue-modern tbody tr:nth-child(odd) {
-  background-color: #F6F6F3; /* light grey */
-}
-
-#vue-modern tbody tr:nth-child(even) {
-  background-color: #ffffff; /* white */
-}
-#vue-modern tbody tr:hover {
-  background-color: #f1f1f1;
-}
-
+    .dropdown-menu {
+        position: absolute;
+        top: calc(100% + 6px);
+        left: 0;
+        z-index: 1000;
+        display: none;
+        min-width: 16rem;
+        padding: 0.5rem 0;
+        margin: 0;
+        font-size: 0.95rem;
+        color: #212529;
+        list-style: none;
+        background-color: #fff;
+        border: 1px solid rgba(0,0,0,.12);
+        border-radius: 8px;
+        box-shadow: 0 8px 24px rgba(0,0,0,.12);
+    }
+    .dropdown-menu.show { display: block; }
+    .dropdown-header { font-weight: 700; font-size: 12px; color: #6c757d; padding: .35rem 1rem; margin-top: .25rem; }
+    .dropdown-item { display: block; width: 100%; padding: .45rem 1rem; color: #212529; text-decoration: none; cursor: pointer; }
+    .dropdown-item:hover { background-color: #f8f9fa; }
+    .dropdown-item.active, .dropdown-item.active:focus, .dropdown-item.active:hover {
+        background-color: #E6F4FF; color: #0a58ca; font-weight: 600;
+    }
 </style>
 @model IEnumerable<QuickRentProject.Models.Booking>
 
@@ -86,23 +101,125 @@
 
 <h1>Bookings</h1>
 
-<p>
-    @if (!User.IsInRole("Owner")) {
-        <a asp-action="Create">Create New</a>
-    }
-</p>
+<form asp-action="Index" method="get" style="margin-bottom:2rem; display:flex; align-items:center; justify-content:space-between;">
+    <!-- Search box (match Items style) -->
+    <div style="display:flex; align-items:center; border:1px solid #ccc; border-radius:6px; padding:0.5rem 1rem; background:#fff; max-width:420px; width:100%; height:44px;">
+        <input type="text" name="SearchString" value="@currentFilter" placeholder="Find a booking" style="border:none; outline:none; flex:1; font-size:1rem; color:#444; height:100%;" />
+        <button type="submit" style="background:none; border:none; cursor:pointer; height:100%; display:flex; align-items:center;" title="Search">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#222" viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="11" cy="11" r="8" stroke="#222" stroke-width="2" fill="none"/>
+                <line x1="17" y1="17" x2="22" y2="22" stroke="#222" stroke-width="2"/>
+            </svg>
+        </button>
+        <a asp-action="Index" style="margin-left:1rem; display:flex; align-items:center; text-decoration:none; height:100%;" title="Clear search">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M15 19l-7-7 7-7" stroke="#222" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </a>
+    </div>
 
-<form asp-action="Index" method="get">
-    <div class="form-actions no-color">
-        <p>
-            <label>Find by name: <input type="text" name="SearchString" value="@ViewData["CurrentFilter"]" /></label>
-            <input type="submit" value="Search" class="btn btn-default" /> |
-            <a asp-action="Index">Back to Full List</a>
-        </p>
+    <!-- Sort dropdown -->
+    <div class="sort-dropdown dropdown">
+        <button id="bookingsSortDropdownBtn" class="sort-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true" aria-controls="bookingsSortDropdownMenu">
+            <span class="sort-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" focusable="false" aria-hidden="true">
+                    <path d="M10 6h10v2H10V6zM4 5h4v4H4V5zm6 6h10v2H10v-2zM4 11h4v4H4v-4zm6 6h10v2H10v-2zM4 17h4v4H4v-4z"></path>
+                </svg>
+            </span>
+            Sort
+            <span class="caret" aria-hidden="true">
+                <svg viewBox="0 0 16 16" width="10" height="10" fill="currentColor" focusable="false" aria-hidden="true">
+                    <path d="M3.2 5.5L8 10.3l4.8-4.8.7.7L8 11.7 2.5 6.2l.7-.7z"/>
+                </svg>
+            </span>
+        </button>
+        <ul id="bookingsSortDropdownMenu" class="dropdown-menu" role="menu" aria-labelledby="bookingsSortDropdownBtn">
+            <li><h6 class="dropdown-header">By start date</h6></li>
+            <li>
+                <a class="dropdown-item @(currentSort=="start_asc"?"active":"")"
+                   asp-action="Index"
+                   asp-route-sortOrder="start_asc"
+                   asp-route-searchString="@currentFilter">Start ↑</a>
+            </li>
+            <li>
+                <a class="dropdown-item @(currentSort=="start_desc"?"active":"")"
+                   asp-action="Index"
+                   asp-route-sortOrder="start_desc"
+                   asp-route-searchString="@currentFilter">Start ↓</a>
+            </li>
+
+            <li><h6 class="dropdown-header">By end date</h6></li>
+            <li>
+                <a class="dropdown-item @(currentSort=="end_asc"?"active":"")"
+                   asp-action="Index"
+                   asp-route-sortOrder="end_asc"
+                   asp-route-searchString="@currentFilter">End ↑</a>
+            </li>
+            <li>
+                <a class="dropdown-item @(currentSort=="end_desc"?"active":"")"
+                   asp-action="Index"
+                   asp-route-sortOrder="end_desc"
+                   asp-route-searchString="@currentFilter">End ↓</a>
+            </li>
+
+            <li><h6 class="dropdown-header">By total cost</h6></li>
+            <li>
+                <a class="dropdown-item @(currentSort=="cost_asc"?"active":"")"
+                   asp-action="Index"
+                   asp-route-sortOrder="cost_asc"
+                   asp-route-searchString="@currentFilter">Cost ↑</a>
+            </li>
+            <li>
+                <a class="dropdown-item @(currentSort=="cost_desc"?"active":"")"
+                   asp-action="Index"
+                   asp-route-sortOrder="cost_desc"
+                   asp-route-searchString="@currentFilter">Cost ↓</a>
+            </li>
+
+            <li><h6 class="dropdown-header">By status</h6></li>
+            <li>
+                <a class="dropdown-item @(currentSort=="status_asc"?"active":"")"
+                   asp-action="Index"
+                   asp-route-sortOrder="status_asc"
+                   asp-route-searchString="@currentFilter">Status A→Z</a>
+            </li>
+            <li>
+                <a class="dropdown-item @(currentSort=="status_desc"?"active":"")"
+                   asp-action="Index"
+                   asp-route-sortOrder="status_desc"
+                   asp-route-searchString="@currentFilter">Status Z→A</a>
+            </li>
+
+            <li><h6 class="dropdown-header">By item</h6></li>
+            <li>
+                <a class="dropdown-item @(currentSort=="item_asc"?"active":"")"
+                   asp-action="Index"
+                   asp-route-sortOrder="item_asc"
+                   asp-route-searchString="@currentFilter">Item A→Z</a>
+            </li>
+            <li>
+                <a class="dropdown-item @(currentSort=="item_desc"?"active":"")"
+                   asp-action="Index"
+                   asp-route-sortOrder="item_desc"
+                   asp-route-searchString="@currentFilter">Item Z→A</a>
+            </li>
+
+            <li><h6 class="dropdown-header">By renter</h6></li>
+            <li>
+                <a class="dropdown-item @(currentSort=="renter_asc"?"active":"")"
+                   asp-action="Index"
+                   asp-route-sortOrder="renter_asc"
+                   asp-route-searchString="@currentFilter">Renter ↑</a>
+            </li>
+            <li>
+                <a class="dropdown-item @(currentSort=="renter_desc"?"active":"")"
+                   asp-action="Index"
+                   asp-route-sortOrder="renter_desc"
+                   asp-route-searchString="@currentFilter">Renter ↓</a>
+            </li>
+        </ul>
     </div>
 </form>
-
-
 
 <table class="table" id="vue-modern" v-show="items.length">
     <thead>
@@ -138,3 +255,32 @@
 }
     </tbody>
 </table>
+
+@section Scripts {
+    <script>
+        (function () {
+            const btn = document.getElementById('bookingsSortDropdownBtn');
+            const menu = document.getElementById('bookingsSortDropdownMenu');
+
+            if (!btn || !menu) return;
+
+            function show() { menu.classList.add('show'); btn.setAttribute('aria-expanded', 'true'); }
+            function hide() { menu.classList.remove('show'); btn.setAttribute('aria-expanded', 'false'); }
+
+            btn.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                menu.classList.contains('show') ? hide() : show();
+            });
+
+            document.addEventListener('click', function () { hide(); });
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') hide();
+            });
+
+            menu.querySelectorAll('a.dropdown-item').forEach(a => {
+                a.addEventListener('click', () => hide());
+            });
+        })();
+    </script>
+}
