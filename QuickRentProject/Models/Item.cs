@@ -14,6 +14,7 @@ namespace QuickRentProject.Models
         [Display(Name = "Item Name")]
         public string Name { get; set; } // Name of the item
 
+        [Required(ErrorMessage = "Please enter the description")]
         [MaxLength(500, ErrorMessage = "Description cannot exceed 500 characters")]
         [Display(Name = "Description")]
         public string Description { get; set; } // Description of the item
@@ -36,17 +37,20 @@ namespace QuickRentProject.Models
         [Required(ErrorMessage = "Please enter the location")]
         [MaxLength(100, ErrorMessage = "Location cannot exceed 100 characters")]
         [Display(Name = "Location")]
-        public string Location { get; set; } // Location of the item
+        // Require "City, <NZ Region>" with a valid NZ region (case-insensitive).
+        // Allows letters, spaces, dot, apostrophe, hyphen in the City.
+        [RegularExpression(
+            @"^[\p{L}][\p{L}\s\.'-]{1,49},\s*(?i)(Northland|Auckland|Waikato|Bay of Plenty|Gisborne|Hawke's Bay|Taranaki|Manawatu-Whanganui|Manawatū-Whanganui|Wellington|Tasman|Nelson|Marlborough|West Coast|Canterbury|Otago|Southland)$",
+            ErrorMessage = "Enter as 'City, Region' with a valid New Zealand region. Example: 'Auckland, Auckland' or 'Wellington, Wellington'.")]
+        public string Location { get; set; }
 
-        // Foreign key to QuickRentProjectUser (Owner)
         [Required]
-        public string OwnerId { get; set; } // Owner of the item
+        public string OwnerId { get; set; }
 
         [ForeignKey("OwnerId")]
-        public QuickRentProjectUser Owner { get; set; } // Navigation property for owner
+        public QuickRentProjectUser Owner { get; set; }
 
-        // Navigation properties
-        public ICollection<Booking> Bookings { get; set; } // One-to-many relationship with Booking
-        public ICollection<Review> Reviews { get; set; } // One-to-many relationship with Review
+        public ICollection<Booking> Bookings { get; set; }
+        public ICollection<Review> Reviews { get; set; }
     }
 }

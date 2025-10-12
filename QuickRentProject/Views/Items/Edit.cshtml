@@ -2,6 +2,20 @@
 
 @{
     ViewData["Title"] = "Edit";
+    var regions = new[]
+    {
+        "Northland","Auckland","Waikato","Bay of Plenty","Gisborne","Hawke's Bay","Taranaki",
+        "Manawatu-Whanganui","Manawatū-Whanganui","Wellington","Tasman","Nelson",
+        "Marlborough","West Coast","Canterbury","Otago","Southland"
+    };
+    var cityPrefill = "";
+    var regionPrefill = "";
+    if (!string.IsNullOrWhiteSpace(Model?.Location))
+    {
+        var parts = Model.Location.Split(',', 2);
+        cityPrefill = parts.Length > 0 ? parts[0].Trim() : "";
+        regionPrefill = parts.Length > 1 ? parts[1].Trim() : "";
+    }
 }
 
 <h1>Edit</h1>
@@ -10,7 +24,7 @@
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Edit">
+        <form asp-action="Edit" id="itemEditForm">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="ItemId" />
 
@@ -46,11 +60,27 @@
                 </label>
             </div>
 
+            <!-- NZ Location: City + Region (Location is auto-built) -->
             <div class="form-group">
-                <label asp-for="Location" class="control-label"></label>
-                <input asp-for="Location" class="form-control" />
-                <span asp-validation-for="Location" class="text-danger"></span>
+                <label class="control-label">City</label>
+                <input id="CityInput"
+                       class="form-control"
+                       value="@cityPrefill"
+                       required
+                       pattern="^[A-Za-z][A-Za-z\s.'-]{1,49}$"
+                       title="Letters, spaces, . ' - only (2-50 chars). Example: Auckland, Wellington, Dunedin." />
             </div>
+            <div class="form-group">
+                <label class="control-label">Region (NZ)</label>
+                <select id="RegionSelect" class="form-control" required>
+                    <option value="">-- Select region --</option>
+                    @foreach (var r in regions) {
+                        <option value="@r" selected="@(string.Equals(r, regionPrefill, System.StringComparison.OrdinalIgnoreCase) ? "selected" : null)">@r</option>
+                    }
+                </select>
+            </div>
+            <input asp-for="Location" type="hidden" id="LocationHidden" />
+            <span asp-validation-for="Location" class="text-danger"></span>
 
             <!-- Owner shown as name, OwnerId kept in hidden input -->
             <div class="form-group">
@@ -73,4 +103,24 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        (function () {
+            const city = document.getElementById('CityInput');
+            const region = document.getElementById('RegionSelect');
+            const hiddenLoc = document.getElementById('LocationHidden');
+            const form = document.getElementById('itemEditForm');
+
+            function updateLocation() {
+                hiddenLoc.value = city.value && region.value ? (city.value.trim() + ', ' + region.value) : '';
+            }
+            // Initialize hidden field on load
+            updateLocation();
+
+            city.addEventListener('input', updateLocation);
+            region.addEventListener('change', updateLocation);
+            form.addEventListener('submit', function () {
+                updateLocation();
+            });
+        })();
+    </script>
 }
