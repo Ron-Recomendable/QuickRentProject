@@ -102,10 +102,22 @@ namespace QuickRentProject.Controllers
 
         // GET: Bookings/Create
         [Authorize(Roles = "Admin,Renter")]
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
             ViewData["ItemId"] = new SelectList(_context.Item, "ItemId", "Name");
-            ViewData["RenterId"] = new SelectList(_context.Users, "Id", "Id");
+
+            if (User.IsInRole("Renter") && !User.IsInRole("Admin"))
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var user = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId);
+                ViewData["RenterFullName"] = user != null ? $"{user.FirstName} {user.LastName}" : userId;
+                ViewData["RenterId"] = userId; // to post via hidden input
+            }
+            else
+            {
+                ViewData["RenterId"] = new SelectList(_context.Users, "Id", "Id");
+            }
+
             return View();
         }
 
@@ -115,11 +127,24 @@ namespace QuickRentProject.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("BookingId,StartDate,EndDate,TotalCost,Status,RenterId,ItemId")] Booking booking)
         {
-            // Force renter to create only for themselves
+            // Lock renter to current user for Renter role
             if (User.IsInRole("Renter") && !User.IsInRole("Admin"))
             {
                 booking.RenterId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             }
+
+            var now = DateTime.Now;
+            var start = booking.StartDate;
+            var end = booking.EndDate;
+
+            if (start < now)
+                ModelState.AddModelError(nameof(Booking.StartDate), "Start must be now or later.");
+            if (start > now.AddDays(14))
+                ModelState.AddModelError(nameof(Booking.StartDate), "Start must be within the next 14 days.");
+            if (end <= start)
+                ModelState.AddModelError(nameof(Booking.EndDate), "End must be after the start.");
+            if (end > start.AddMonths(12))
+                ModelState.AddModelError(nameof(Booking.EndDate), "Booking cannot exceed 12 months.");
 
             if (!ModelState.IsValid)
             {
@@ -128,8 +153,20 @@ namespace QuickRentProject.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
+            // Rebuild dropdowns on validation errors
             ViewData["ItemId"] = new SelectList(_context.Item, "ItemId", "Name", booking.ItemId);
-            ViewData["RenterId"] = new SelectList(_context.Users, "Id", "Id", booking.RenterId);
+            if (User.IsInRole("Renter") && !User.IsInRole("Admin"))
+            {
+                var userId = booking.RenterId;
+                var user = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId);
+                ViewData["RenterFullName"] = user != null ? $"{user.FirstName} {user.LastName}" : userId;
+                ViewData["RenterId"] = userId;
+            }
+            else
+            {
+                ViewData["RenterId"] = new SelectList(_context.Users, "Id", "Id", booking.RenterId);
+            }
+
             return View(booking);
         }
 
@@ -147,10 +184,23 @@ namespace QuickRentProject.Controllers
             {
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 if (booking.RenterId != userId) return Forbid();
+
+                // Show renter full name (read-only)
+                var user = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId);
+                ViewData["RenterFullName"] = user != null ? $"{user.FirstName} {user.LastName}" : userId;
+                ViewData["RenterId"] = userId;
+            }
+            else
+            {
+                // Admin: dropdown with renter full names
+                var renters = await _context.Users.AsNoTracking()
+                    .Select(u => new { u.Id, Name = u.FirstName + " " + u.LastName })
+                    .ToListAsync();
+                ViewData["RenterList"] = new SelectList(renters, "Id", "Name", booking.RenterId);
             }
 
+            // Item dropdown shows names
             ViewData["ItemId"] = new SelectList(_context.Item, "ItemId", "Name", booking.ItemId);
-            ViewData["RenterId"] = new SelectList(_context.Users, "Id", "Id", booking.RenterId);
             return View(booking);
         }
 
@@ -162,7 +212,6 @@ namespace QuickRentProject.Controllers
         {
             if (id != booking.BookingId) return NotFound();
 
-            // Renter: ensure ownership and prevent changing RenterId
             if (User.IsInRole("Renter") && !User.IsInRole("Admin"))
             {
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -170,6 +219,19 @@ namespace QuickRentProject.Controllers
                 if (dbBooking == null || dbBooking.RenterId != userId) return Forbid();
                 booking.RenterId = userId;
             }
+
+            var now = DateTime.Now;
+            var start = booking.StartDate;
+            var end = booking.EndDate;
+
+            if (start < now)
+                ModelState.AddModelError(nameof(Booking.StartDate), "Start must be now or later.");
+            if (start > now.AddDays(14))
+                ModelState.AddModelError(nameof(Booking.StartDate), "Start must be within the next 14 days.");
+            if (end <= start)
+                ModelState.AddModelError(nameof(Booking.EndDate), "End must be after the start.");
+            if (end > start.AddMonths(12))
+                ModelState.AddModelError(nameof(Booking.EndDate), "Booking cannot exceed 12 months.");
 
             if (!ModelState.IsValid)
             {
@@ -187,7 +249,20 @@ namespace QuickRentProject.Controllers
             }
 
             ViewData["ItemId"] = new SelectList(_context.Item, "ItemId", "Name", booking.ItemId);
-            ViewData["RenterId"] = new SelectList(_context.Users, "Id", "Id", booking.RenterId);
+            if (User.IsInRole("Renter") && !User.IsInRole("Admin"))
+            {
+                var userId = booking.RenterId;
+                var user = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId);
+                ViewData["RenterFullName"] = user != null ? $"{user.FirstName} {user.LastName}" : userId;
+                ViewData["RenterId"] = userId;
+            }
+            else
+            {
+                var renters = await _context.Users.AsNoTracking()
+                    .Select(u => new { u.Id, Name = u.FirstName + " " + u.LastName })
+                    .ToListAsync();
+                ViewData["RenterList"] = new SelectList(renters, "Id", "Name", booking.RenterId);
+            }
             return View(booking);
         }
 

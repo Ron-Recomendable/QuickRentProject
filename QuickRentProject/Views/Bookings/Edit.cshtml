@@ -2,6 +2,11 @@
 
 @{
     ViewData["Title"] = "Edit";
+    var now = DateTime.Now;
+    var minStart = now.ToString("yyyy-MM-ddTHH:mm");
+    var maxStart = now.AddDays(14).ToString("yyyy-MM-ddTHH:mm");
+    var startVal = (Model?.StartDate ?? now);
+    var endMax = startVal.AddMonths(12).ToString("yyyy-MM-ddTHH:mm");
 }
 
 <h1>Edit</h1>
@@ -13,14 +18,18 @@
         <form asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="BookingId" />
+
             <div class="form-group">
                 <label asp-for="StartDate" class="control-label"></label>
-                <input asp-for="StartDate" class="form-control" />
+                <input asp-for="StartDate" class="form-control" type="datetime-local" min="@minStart" max="@maxStart" step="60" />
+                <small class="form-text text-muted">Start must be within the next 14 days.</small>
                 <span asp-validation-for="StartDate" class="text-danger"></span>
             </div>
+
             <div class="form-group">
                 <label asp-for="EndDate" class="control-label"></label>
-                <input asp-for="EndDate" class="form-control" />
+                <input asp-for="EndDate" class="form-control" type="datetime-local" min="@startVal.ToString("yyyy-MM-ddTHH:mm")" max="@endMax" step="60" />
+                <small class="form-text text-muted">End must be after start and within 12 months.</small>
                 <span asp-validation-for="EndDate" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -33,13 +42,26 @@
                 <input asp-for="Status" class="form-control" />
                 <span asp-validation-for="Status" class="text-danger"></span>
             </div>
+
+            @if (User.IsInRole("Renter") && !User.IsInRole("Admin"))
+            {
+                <div class="form-group">
+                    <label>Renter</label>
+                    <input class="form-control" value="@(ViewData["RenterFullName"] ?? "Me")" readonly />
+                    <input type="hidden" name="RenterId" value="@ViewData["RenterId"]" />
+                </div>
+            }
+            else
+            {
+                <div class="form-group">
+                    <label>Renter</label>
+                    <select asp-for="RenterId" class="form-control" asp-items="ViewBag.RenterList"></select>
+                    <span asp-validation-for="RenterId" class="text-danger"></span>
+                </div>
+            }
+
             <div class="form-group">
-                <label asp-for="RenterId" class="control-label"></label>
-                <select asp-for="RenterId" class="form-control" asp-items="ViewBag.RenterId"></select>
-                <span asp-validation-for="RenterId" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="ItemId" class="control-label"></label>
+                <label asp-for="ItemId" class="control-label">Item</label>
                 <select asp-for="ItemId" class="form-control" asp-items="ViewBag.ItemId"></select>
                 <span asp-validation-for="ItemId" class="text-danger"></span>
             </div>
