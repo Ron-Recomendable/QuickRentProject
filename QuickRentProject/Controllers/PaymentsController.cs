@@ -11,7 +11,7 @@ using QuickRentProjectDb.Data;
 
 namespace QuickRentProject.Controllers
 {
-    [Authorize] // must be signed-in
+    [Authorize]
     public class PaymentsController : Controller
     {
         private readonly QuickRentProjectDbContext _context;
@@ -28,13 +28,10 @@ namespace QuickRentProject.Controllers
             ViewData["CurrentSort"] = string.IsNullOrEmpty(sortOrder) ? "date_asc" : sortOrder;
 
             var payments = _context.Payment
-                .Include(p => p.Booking)
-                    .ThenInclude(b => b.Renter)
-                .Include(p => p.Booking)
-                    .ThenInclude(b => b.Item)
+                .Include(p => p.Booking).ThenInclude(b => b.Renter)
+                .Include(p => p.Booking).ThenInclude(b => b.Item)
                 .AsQueryable();
 
-            // Renters only see their own payments
             if (User.IsInRole("Renter") && !User.IsInRole("Admin"))
             {
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -54,37 +51,15 @@ namespace QuickRentProject.Controllers
 
             switch (ViewData["CurrentSort"] as string)
             {
-                case "amount_asc":
-                    payments = payments.OrderBy(p => p.Amount);
-                    break;
-                case "amount_desc":
-                    payments = payments.OrderByDescending(p => p.Amount);
-                    break;
-                case "date_asc":
-                    payments = payments.OrderBy(p => p.PaymentDate);
-                    break;
-                case "date_desc":
-                    payments = payments.OrderByDescending(p => p.PaymentDate);
-                    break;
-                case "method_asc":
-                    payments = payments.OrderBy(p => p.PaymentMethod);
-                    break;
-                case "method_desc":
-                    payments = payments.OrderByDescending(p => p.PaymentMethod);
-                    break;
-                case "booking_asc":
-                    payments = payments
-                        .OrderBy(p => p.Booking.Renter.FirstName)
-                        .ThenBy(p => p.Booking.Renter.LastName);
-                    break;
-                case "booking_desc":
-                    payments = payments
-                        .OrderByDescending(p => p.Booking.Renter.FirstName)
-                        .ThenByDescending(p => p.Booking.Renter.LastName);
-                    break;
-                default:
-                    payments = payments.OrderBy(p => p.PaymentDate);
-                    break;
+                case "amount_asc": payments = payments.OrderBy(p => p.Amount); break;
+                case "amount_desc": payments = payments.OrderByDescending(p => p.Amount); break;
+                case "date_asc": payments = payments.OrderBy(p => p.PaymentDate); break;
+                case "date_desc": payments = payments.OrderByDescending(p => p.PaymentDate); break;
+                case "method_asc": payments = payments.OrderBy(p => p.PaymentMethod); break;
+                case "method_desc": payments = payments.OrderByDescending(p => p.PaymentMethod); break;
+                case "booking_asc": payments = payments.OrderBy(p => p.Booking.Renter.LastName).ThenBy(p => p.Booking.Renter.FirstName); break;
+                case "booking_desc": payments = payments.OrderByDescending(p => p.Booking.Renter.LastName).ThenByDescending(p => p.Booking.Renter.FirstName); break;
+                default: payments = payments.OrderBy(p => p.PaymentDate); break;
             }
 
             return View(await payments.AsNoTracking().ToListAsync());
@@ -93,27 +68,29 @@ namespace QuickRentProject.Controllers
         // GET: Payments/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
             var payment = await _context.Payment
-                .Include(p => p.Booking)
+                .Include(p => p.Booking).ThenInclude(b => b.Renter)
+                .Include(p => p.Booking).ThenInclude(b => b.Item)
                 .FirstOrDefaultAsync(m => m.PaymentId == id);
-            if (payment == null)
+
+            if (payment == null) return NotFound();
+
+            if (User.IsInRole("Renter") && !User.IsInRole("Admin"))
             {
-                return NotFound();
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (payment.Booking.RenterId != userId) return Forbid();
             }
 
             return View(payment);
         }
 
-        // GET: Payments/Create
+        // IMPORTANT: keep ONLY THIS ONE GET action to avoid AmbiguousMatchException
+        [HttpGet]
         [Authorize(Roles = "Admin,Renter")]
-        public async Task<IActionResult> Create()
+        public async Task<IActionResult> Create(int? bookingId = null)
         {
-            // Restrict booking selection
             if (User.IsInRole("Renter") && !User.IsInRole("Admin"))
             {
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -129,7 +106,7 @@ namespace QuickRentProject.Controllers
                     })
                     .ToListAsync();
 
-                ViewData["BookingId"] = new SelectList(myBookings, "BookingId", "Label");
+                ViewData["BookingId"] = new SelectList(myBookings, "BookingId", "Label", bookingId);
             }
             else
             {
@@ -143,21 +120,18 @@ namespace QuickRentProject.Controllers
                     })
                     .ToListAsync();
 
-                ViewData["BookingId"] = new SelectList(allBookings, "BookingId", "Label");
+                ViewData["BookingId"] = new SelectList(allBookings, "BookingId", "Label", bookingId);
             }
 
             return View();
         }
 
         // POST: Payments/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [Authorize(Roles = "Admin,Renter")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("PaymentId,Amount,PaymentDate,PaymentMethod,BookingId")] Payment payment)
         {
-            // Ownership check on selected booking
             if (User.IsInRole("Renter") && !User.IsInRole("Admin"))
             {
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -165,19 +139,19 @@ namespace QuickRentProject.Controllers
                 if (booking == null || booking.RenterId != userId) return Forbid();
             }
 
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
                 _context.Add(payment);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
 
-            // Rebuild booking list if validation failed
-            await Create();
-            return View(payment);
+            // rebuild booking list if validation failed
+            return await Create(payment.BookingId);
         }
 
         // GET: Payments/Edit/5
+        [HttpGet]
         [Authorize(Roles = "Admin,Renter")]
         public async Task<IActionResult> Edit(int? id)
         {
@@ -189,14 +163,12 @@ namespace QuickRentProject.Controllers
                 .FirstOrDefaultAsync(p => p.PaymentId == id);
             if (payment == null) return NotFound();
 
-            // Ownership guard
             if (User.IsInRole("Renter") && !User.IsInRole("Admin"))
             {
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 var booking = await _context.Booking.AsNoTracking().FirstOrDefaultAsync(b => b.BookingId == payment.BookingId);
                 if (booking == null || booking.RenterId != userId) return Forbid();
 
-                // Restrict selectable bookings to current renter
                 var myBookings = await _context.Booking
                     .Include(b => b.Item)
                     .Where(b => b.RenterId == userId)
@@ -230,8 +202,6 @@ namespace QuickRentProject.Controllers
         }
 
         // POST: Payments/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [Authorize(Roles = "Admin,Renter")]
         [ValidateAntiForgeryToken]
@@ -239,7 +209,6 @@ namespace QuickRentProject.Controllers
         {
             if (id != payment.PaymentId) return NotFound();
 
-            // Ownership guard for both existing payment and new BookingId
             if (User.IsInRole("Renter") && !User.IsInRole("Admin"))
             {
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -254,7 +223,7 @@ namespace QuickRentProject.Controllers
                 if (targetBooking == null || targetBooking.RenterId != userId) return Forbid();
             }
 
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
                 try
                 {
@@ -269,21 +238,20 @@ namespace QuickRentProject.Controllers
                 }
             }
 
-            // Rebuild lists if validation fails
+            // rebuild lists if validation fails
             return await Edit(id);
         }
 
         // GET: Payments/Delete/5
+        [HttpGet]
         [Authorize(Roles = "Admin,Renter")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null) return NotFound();
 
             var payment = await _context.Payment
-                .Include(p => p.Booking)
-                    .ThenInclude(b => b.Renter)
-                .Include(p => p.Booking)
-                    .ThenInclude(b => b.Item)
+                .Include(p => p.Booking).ThenInclude(b => b.Renter)
+                .Include(p => p.Booking).ThenInclude(b => b.Item)
                 .FirstOrDefaultAsync(m => m.PaymentId == id);
             if (payment == null) return NotFound();
 

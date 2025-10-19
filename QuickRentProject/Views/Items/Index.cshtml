@@ -59,6 +59,25 @@
     }
     .create:hover { background: #388e3c; color: #fff; }
 
+    /* Rent button styling */
+    .rent {
+        background: #ff9800;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        font-size: 1.0rem;
+        font-weight: 500;
+        padding: 0.35rem 0.75rem;
+        cursor: pointer;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.07);
+        transition: background 0.2s ease, color 0.2s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+    .rent:hover { background: #f57c00; color: #fff; }
+
     .items-title { text-align: center; padding: 1rem 0; letter-spacing: 0.1em; }
 
     /* Sort button (match Create, smaller, keep blue) */
@@ -236,11 +255,22 @@
             <td>@(item.Owner != null ? $"{item.Owner.FirstName} {item.Owner.LastName}" : item.OwnerId)</td>
             <td>
                 @if (User.IsInRole("Owner") || User.IsInRole("Admin")) {
-                    <a asp-action="Edit" asp-route-id="@item.ItemId" class="vue-btn edit"><img class="button" src="~/images/edit.jpg" alt="Alternate Text"/></a>
+                    <a asp-action="Edit" asp-route-id="@item.ItemId" class="vue-btn edit"><img class="button" src="~/images/edit.jpg" alt="Edit"/></a>
                 }
-                <a asp-action="Details" asp-route-id="@item.ItemId" class="vue-btn details"><img class="button" src="~/images/Details.jpg" alt="Alternate Text" /></a>
+                <a asp-action="Details" asp-route-id="@item.ItemId" class="vue-btn details"><img class="button" src="~/images/Details.jpg" alt="Details" /></a>
                 @if (User.IsInRole("Owner") || User.IsInRole("Admin")) {
-                    <a asp-action="Delete" asp-route-id="@item.ItemId" class="vue-btn delete"><img class="button" src="~/images/Delete.jpg" alt="Alternate Text" /></a>
+                    <a asp-action="Delete" asp-route-id="@item.ItemId" class="vue-btn delete"><img class="button" src="~/images/Delete.jpg" alt="Delete" /></a>
+                }
+
+                @* Rent button: renters (and admins for testing) can rent only available items *@
+                @if (item.IsAvailable && (User.IsInRole("Renter") || User.IsInRole("Admin"))) {
+                    <a asp-controller="Bookings"
+                       asp-action="Create"
+                       asp-route-itemId="@item.ItemId"
+                       class="rent"
+                       title="Rent this item">
+                        Rent
+                    </a>
                 }
             </td>
         </tr>
