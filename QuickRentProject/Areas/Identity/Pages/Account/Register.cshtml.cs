@@ -151,6 +151,14 @@ namespace QuickRentProject.Areas.Identity.Pages.Account
                 {
                     _logger.LogInformation("User created a new account with password.");
 
+                    // Assign ASP.NET Identity role (used by [Authorize(Roles = "...")] and User.IsInRole)
+                    var addRole = await _userManager.AddToRoleAsync(user, Input.Role);
+                    if (!addRole.Succeeded)
+                    {
+                        foreach (var e in addRole.Errors) ModelState.AddModelError(string.Empty, e.Description);
+                        return Page();
+                    }
+
                     var userId = await _userManager.GetUserIdAsync(user);
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                     code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
