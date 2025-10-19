@@ -89,6 +89,13 @@
     .dropdown-item.active, .dropdown-item.active:focus, .dropdown-item.active:hover {
         background-color: #E6F4FF; color: #0a58ca; font-weight: 600;
     }
+
+    .stars {
+        color: #f5b301;
+        font-size: 1rem;
+        letter-spacing: 1px;
+    }
+
 </style>
 @model IEnumerable<QuickRentProject.Models.Review>
 
@@ -204,11 +211,17 @@
     <tbody>
 @foreach (var item in Model) {
         <tr>
-            <td>@Html.DisplayFor(modelItem => item.Rating)</td>
+            <td>
+                @{
+                    var r = Math.Clamp(item.Rating, 0, 5);
+                    var starsStr = new string('★', r) + new string('☆', 5 - r);
+                }
+                <span class="stars" aria-label="@item.Rating of 5">@starsStr</span>
+            </td>
             <td>@Html.DisplayFor(modelItem => item.Comment)</td>
             <td>@Html.DisplayFor(modelItem => item.ReviewDate)</td>
-            <td>@Html.DisplayFor(modelItem => item.Item.Category)</td>
-            <td>@Html.DisplayFor(modelItem => item.User.Id)</td>
+            <td>@(item.Item != null ? item.Item.Name : item.ItemId.ToString())</td>
+            <td>@(item.User != null ? $"{item.User.FirstName} {item.User.LastName}" : item.UserId)</td>
             <td>
                @if (!User.IsInRole("Owner")) {
                    <a asp-action="Edit" asp-route-id="@item.ReviewId" class="vue-btn edit"><img class="button" src="~/images/edit.jpg" alt="Alternate Text" /></a> 
