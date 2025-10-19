@@ -104,6 +104,17 @@
         letter-spacing: 1px;
     }
 
+    /* Actions column and separators */
+    .actions { display: inline-flex; align-items: center; gap: 6px; }
+    #vue-modern .vue-btn { height: 26px; }
+
+    /* Vertical separators for all columns */
+    #vue-modern thead th:not(:first-child) { border-left: 1.5px solid #e3e3e3; }
+    #vue-modern tbody td:not(:first-child) { border-left: 1.5px solid #e9e9e9; }
+
+    /* Actions-specific vertical rule */
+    #vue-modern thead th.actions-header { border-left: 1.5px solid #e3e3e3; }
+    #vue-modern tbody td.actions-cell { border-left: 1.5px solid #e3e3e3; }
 </style>
 @model IEnumerable<QuickRentProject.Models.Review>
 
@@ -213,7 +224,7 @@
             <th>@Html.DisplayNameFor(model => model.ReviewDate)</th>
             <th>@Html.DisplayNameFor(model => model.Item)</th>
             <th>@Html.DisplayNameFor(model => model.User)</th>
-            <th></th>
+            <th class="actions-header">Actions</th>
         </tr>
     </thead>
     <tbody>
@@ -230,15 +241,20 @@
             <td>@Html.DisplayFor(modelItem => item.ReviewDate)</td>
             <td>@(item.Item != null ? item.Item.Name : item.ItemId.ToString())</td>
             <td>@(item.User != null ? $"{item.User.FirstName} {item.User.LastName}" : item.UserId)</td>
-            <td>
-               @if (!User.IsInRole("Owner")) {
-                   <a asp-action="Edit" asp-route-id="@item.ReviewId" class="vue-btn edit"><img class="button" src="~/images/edit.jpg" alt="Alternate Text" /></a> 
-               }
-               <a asp-action="Details" asp-route-id="@item.ReviewId" class="vue-btn details"><img class="button" src="~/images/Details.jpg" alt="Alternate Text" /></a> 
-               @if (!User.IsInRole("Owner")) {
-                   <a asp-action="Delete" asp-route-id="@item.ReviewId" class="vue-btn delete"><img class="button" src="~/images/Delete.jpg" alt="Alternate Text" /></a>
-               }
-            </td>
+            <td class="actions-cell">
+    <div class="actions">
+        @* keep your existing visibility checks *@
+        <a asp-action="Edit" asp-route-id="@item.ReviewId" class="vue-btn edit">
+            <img class="button" src="~/images/edit.jpg" alt="Edit" />
+        </a>
+        <a asp-action="Details" asp-route-id="@item.ReviewId" class="vue-btn details">
+            <img class="button" src="~/images/Details.jpg" alt="Details" />
+        </a>
+        <a asp-action="Delete" asp-route-id="@item.ReviewId" class="vue-btn delete">
+            <img class="button" src="~/images/Delete.jpg" alt="Delete" />
+        </a>
+    </div>
+</td>
         </tr>
 }
     </tbody>

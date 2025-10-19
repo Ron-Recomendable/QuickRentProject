@@ -99,6 +99,16 @@
     .dropdown-item.active, .dropdown-item.active:focus, .dropdown-item.active:hover {
         background-color: #E6F4FF; color: #0a58ca; font-weight: 600;
     }
+
+    /* Actions column and separators */
+    .actions { display: inline-flex; align-items: center; gap: 6px; }
+    #vue-modern .vue-btn { height: 26px; }
+    #vue-modern thead th.actions-header { border-left: 1.5px solid #e3e3e3; }
+    #vue-modern tbody td.actions-cell { border-left: 1.5px solid #e3e3e3; }
+
+    /* Vertical separators for all columns */
+    #vue-modern thead th:not(:first-child) { border-left: 1.5px solid #e3e3e3; }
+    #vue-modern tbody td:not(:first-child) { border-left: 1.5px solid #e9e9e9; }
 </style>
 @using System.Security.Claims
 @model IEnumerable<QuickRentProject.Models.Payment>
@@ -209,7 +219,7 @@
             <th>@Html.DisplayNameFor(model => model.PaymentDate)</th>
             <th>@Html.DisplayNameFor(model => model.PaymentMethod)</th>
             <th>Booking for</th>
-            <th></th>
+            <th class="actions-header">Actions</th>
         </tr>
     </thead>
     <tbody>
@@ -219,14 +229,16 @@
             <td>@Html.DisplayFor(modelItem => item.PaymentDate)</td>
             <td>@Html.DisplayFor(modelItem => item.PaymentMethod)</td>
             <td>@(item.Booking?.Renter != null ? $"{item.Booking.Renter.FirstName} {item.Booking.Renter.LastName}" : item.Booking?.RenterId)</td>
-            <td>
-                @if (User.IsInRole("Admin") || (User.IsInRole("Renter") && item.Booking?.RenterId == currentUserId)) {
-                    <a asp-action="Edit" asp-route-id="@item.PaymentId" class="vue-btn edit"><img class="button" src="~/images/edit.jpg" alt="Edit" /></a>
-                }
-                <a asp-action="Details" asp-route-id="@item.PaymentId" class="vue-btn details"><img class="button" src="~/images/Details.jpg" alt="Details" /></a>
-                @if (User.IsInRole("Admin") || (User.IsInRole("Renter") && item.Booking?.RenterId == currentUserId)) {
-                    <a asp-action="Delete" asp-route-id="@item.PaymentId" class="vue-btn delete"><img class="button" src="~/images/Delete.jpg" alt="Delete" /></a>
-                }
+            <td class="actions-cell">
+                <div class="actions">
+                    @if (User.IsInRole("Admin") || (User.IsInRole("Renter") && item.Booking?.RenterId == currentUserId)) {
+                        <a asp-action="Edit" asp-route-id="@item.PaymentId" class="vue-btn edit"><img class="button" src="~/images/edit.jpg" alt="Edit" /></a>
+                    }
+                    <a asp-action="Details" asp-route-id="@item.PaymentId" class="vue-btn details"><img class="button" src="~/images/Details.jpg" alt="Details" /></a>
+                    @if (User.IsInRole("Admin") || (User.IsInRole("Renter") && item.Booking?.RenterId == currentUserId)) {
+                        <a asp-action="Delete" asp-route-id="@item.PaymentId" class="vue-btn delete"><img class="button" src="~/images/Delete.jpg" alt="Delete" /></a>
+                    }
+                </div>
             </td>
         </tr>
 }

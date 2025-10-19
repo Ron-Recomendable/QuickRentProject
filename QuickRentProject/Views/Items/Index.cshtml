@@ -1,4 +1,5 @@
-﻿<style>
+﻿@using System.Linq
+<style>
     body {
         background: #F4F4F4;
     }
@@ -19,19 +20,13 @@
       margin-top: 20px;
     }
     #vue-modern thead { background-color: #f5f5f5; font-weight: bold; }
-    /* Added centering */
-    #vue-modern thead th {
-        text-align: center;
-        vertical-align: middle;
-    }
+    #vue-modern thead th { text-align: center; vertical-align: middle; }
     #vue-modern th, #vue-modern td { padding: 10px 14px; border-bottom: 1px solid #ddd; font-size: 14px; }
-    /* Added centering */
-    #vue-modern tbody td {
-        text-align: center;
-        vertical-align: middle;
-    }
-    #vue-modern td:last-child { display: flex; justify-content: center; gap: 2px; }
-    #vue-modern .vue-btn { border: none; padding: 4px 6px; border-radius: 4px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
+    #vue-modern tbody td { text-align: center; vertical-align: middle; }
+    #vue-modern td:last-child { display: flex; justify-content: center; }
+    .actions { display: inline-flex; align-items: center; gap: 6px; }
+
+    #vue-modern .vue-btn { height: 26px; border: none; padding: 4px 6px; border-radius: 4px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
     #vue-modern .vue-btn.edit:hover { background-color: #e0a800; }
     #vue-modern .vue-btn.details:hover { background-color: #138496; }
     #vue-modern .vue-btn.delete:hover { background-color: #c82333; }
@@ -41,91 +36,81 @@
 
     /* Create button (smaller) */
     .create {
-        background: #4caf50;
-        color: #fff;
-        border: none;
-        border-radius: 6px;
-        font-size: 1.1rem;          /* was 1.25rem */
-        font-weight: 500;
-        padding: 0.5rem 1rem;       /* was 0.75rem 1.5rem */
-        cursor: pointer;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.07);
-        transition: background 0.2s ease, color 0.2s ease;
-        text-align: center;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
+        background: #4caf50; color: #fff; border: none; border-radius: 6px;
+        font-size: 1.1rem; font-weight: 500; padding: 0.5rem 1rem; cursor: pointer;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.07); transition: background 0.2s ease, color 0.2s ease;
+        text-align: center; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem;
     }
     .create:hover { background: #388e3c; color: #fff; }
 
-    /* Rent button styling */
+    /* Rent button styling (inline with row actions) */
     .rent {
-        background: #ff9800;
-        color: #fff;
-        border: none;
-        border-radius: 6px;
-        font-size: 1.0rem;
-        font-weight: 500;
-        padding: 0.35rem 0.75rem;
-        cursor: pointer;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.07);
+        background: #ff9800; color: #fff; border: none; border-radius: 6px;
+        font-size: 0.95rem; font-weight: 600; padding: 0.3rem 0.6rem;
+        cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.07);
         transition: background 0.2s ease, color 0.2s ease;
-        text-decoration: none;
+        text-decoration: none; display: inline-flex; align-items: center; gap: 0.4rem;
+        width: auto; justify-content: center; line-height: 1;
+        line-height: 1;
+        height: 26px;
         display: inline-flex;
         align-items: center;
-        gap: 0.4rem;
     }
     .rent:hover { background: #f57c00; color: #fff; }
 
     .items-title { text-align: center; padding: 1rem 0; letter-spacing: 0.1em; }
 
-    /* Sort button (match Create, smaller, keep blue) */
+    /* Sort button */
     .sort-dropdown { position: relative; }
     .sort-dropdown .sort-btn {
-        background: #0078D4;
-        color: #fff;
-        border: none;
-        border-radius: 6px;
-        font-size: 1.1rem;          /* was 1.25rem */
-        font-weight: 500;
-        padding: 0.5rem 1rem;       /* was 0.75rem 1.5rem */
-        cursor: pointer;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.07);
-        transition: background 0.2s ease, color 0.2s ease;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
+        background: #0078D4; color: #fff; border: none; border-radius: 6px;
+        font-size: 1.1rem; font-weight: 500; padding: 0.5rem 1rem; cursor: pointer;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.07); transition: background 0.2s ease, color 0.2s ease;
+        display: inline-flex; align-items: center; gap: 0.5rem;
     }
     .sort-dropdown .sort-btn:hover { background: #0a74c1; }
-    .sort-icon { display: inline-flex; width: 16px; height: 16px; } /* was 18px */
-    .caret { display: inline-flex; width: 10px; height: 10px; }     /* was 12px */
+    .sort-icon { display: inline-flex; width: 16px; height: 16px; }
+    .caret { display: inline-flex; width: 10px; height: 10px; }
 
-    /* Lightweight dropdown */
     .dropdown-menu {
-        position: absolute;
-        top: calc(100% + 6px);
-        left: 0;
-        z-index: 1000;
-        display: none;
-        min-width: 16rem;
-        padding: 0.5rem 0;
-        margin: 0;
-        font-size: 0.95rem;
-        color: #212529;
-        list-style: none;
-        background-color: #fff;
-        border: 1px solid rgba(0,0,0,.12);
-        border-radius: 8px;
-        box-shadow: 0 8px 24px rgba(0,0,0,.12);
+        position: absolute; top: calc(100% + 6px); left: 0; z-index: 1000; display: none;
+        min-width: 16rem; padding: 0.5rem 0; margin: 0; font-size: 0.95rem; color: #212529;
+        list-style: none; background-color: #fff; border: 1px solid rgba(0,0,0,.12);
+        border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,.12);
     }
     .dropdown-menu.show { display: block; }
     .dropdown-header { font-weight: 700; font-size: 12px; color: #6c757d; padding: .35rem 1rem; margin-top: .25rem; }
     .dropdown-item { display: block; width: 100%; padding: .45rem 1rem; color: #212529; text-decoration: none; cursor: pointer; }
     .dropdown-item:hover { background-color: #f8f9fa; }
-    .dropdown-item.active, .dropdown-item.active:focus, .dropdown-item.active:hover {
-        background-color: #E6F4FF; color: #0a58ca; font-weight: 600;
-    }
+    .dropdown-item.active, .dropdown-item.active:focus, .dropdown-item.active:hover { background-color: #E6F4FF; color: #0a58ca; font-weight: 600; }
+
+    /* Actions column header/cell separators */
+#vue-modern thead th.actions-header {
+    border-left: 1.5px solid #e3e3e3; /* subtle gray line before Actions header */
+}
+#vue-modern tbody td.actions-cell {
+    border-left: 1.5px solid #e3e3e3; /* same line down the column */
+}
+
+/* Subtle divider between action group and Rent button */
+.action-divider {
+    width: 1px;
+    height: 22px;
+    background: #e3e3e3;
+    margin: 0 8px;
+}
+
+/* Vertical separators for every column (headers and cells) */
+#vue-modern thead th:not(:first-child) {
+    border-left: 1.5px solid #e3e3e3; /* subtle gray line between headers */
+}
+#vue-modern tbody td:not(:first-child) {
+    border-left: 1.5px solid #e9e9e9; /* subtle gray line between data cells */
+}
+
+/* Keep the Actions column consistent with the global separators */
+#vue-modern thead th.actions-header { border-left-color: #e3e3e3; }
+#vue-modern tbody td.actions-cell { border-left-color: #e3e3e3; }
 </style>
 
 @model IEnumerable<QuickRentProject.Models.Item>
@@ -139,7 +124,6 @@
 <h1 class="items-title">ITEMS</h1>
 
 <form asp-action="Index" method="get" style="margin-bottom:2rem; display:flex; align-items:center; justify-content:space-between;">
-    <!-- Smaller search box -->
     <div style="display:flex; align-items:center; border:1px solid #ccc; border-radius:6px; padding:0.5rem 1rem; background:#fff; max-width:420px; width:100%; height:44px;">
         <input type="text" name="SearchString" value="@currentFilter" placeholder="Find an item" style="border:none; outline:none; flex:1; font-size:1rem; color:#444; height:100%;" />
         <button type="submit" style="background:none; border:none; cursor:pointer; height:100%; display:flex; align-items:center;">
@@ -156,7 +140,6 @@
     </div>
 
     <div style="display:flex; align-items:center; gap:0.75rem;">
-        <!-- Create button visible only to Owner/Admin -->
         @if (User.IsInRole("Owner") || User.IsInRole("Admin")) {
             <a asp-action="Create" class="create">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24">
@@ -167,8 +150,6 @@
                 Create New
             </a>
         }
-
-        <!-- Sort button -->
         <div class="sort-dropdown dropdown">
             <button id="itemsSortDropdownBtn" class="sort-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true" aria-controls="itemsSortDropdownMenu">
                 <span class="sort-icon" aria-hidden="true">
@@ -185,46 +166,14 @@
             </button>
             <ul id="itemsSortDropdownMenu" class="dropdown-menu" role="menu" aria-labelledby="itemsSortDropdownBtn">
                 <li><h6 class="dropdown-header">By name</h6></li>
-                <li>
-                    <a class="dropdown-item @(currentSort=="name_asc"?"active":"")"
-                       asp-action="Index"
-                       asp-route-sortOrder="name_asc"
-                       asp-route-searchString="@currentFilter">Name A→Z</a>
-                </li>
-                <li>
-                    <a class="dropdown-item @(currentSort=="name_desc"?"active":"")"
-                       asp-action="Index"
-                       asp-route-sortOrder="name_desc"
-                       asp-route-searchString="@currentFilter">Name Z→A</a>
-                </li>
-
+                <li><a class="dropdown-item @(currentSort=="name_asc"?"active":"")" asp-action="Index" asp-route-sortOrder="name_asc" asp-route-searchString="@currentFilter">Name A→Z</a></li>
+                <li><a class="dropdown-item @(currentSort=="name_desc"?"active":"")" asp-action="Index" asp-route-sortOrder="name_desc" asp-route-searchString="@currentFilter">Name Z→A</a></li>
                 <li><h6 class="dropdown-header">By category</h6></li>
-                <li>
-                    <a class="dropdown-item @(currentSort=="category_asc"?"active":"")"
-                       asp-action="Index"
-                       asp-route-sortOrder="category_asc"
-                       asp-route-searchString="@currentFilter">Category A→Z</a>
-                </li>
-                <li>
-                    <a class="dropdown-item @(currentSort=="category_desc"?"active":"")"
-                       asp-action="Index"
-                       asp-route-sortOrder="category_desc"
-                       asp-route-searchString="@currentFilter">Category Z→A</a>
-                </li>
-
+                <li><a class="dropdown-item @(currentSort=="category_asc"?"active":"")" asp-action="Index" asp-route-sortOrder="category_asc" asp-route-searchString="@currentFilter">Category A→Z</a></li>
+                <li><a class="dropdown-item @(currentSort=="category_desc"?"active":"")" asp-action="Index" asp-route-sortOrder="category_desc" asp-route-searchString="@currentFilter">Category Z→A</a></li>
                 <li><h6 class="dropdown-header">By price</h6></li>
-                <li>
-                    <a class="dropdown-item @(currentSort=="price_asc"?"active":"")"
-                       asp-action="Index"
-                       asp-route-sortOrder="price_asc"
-                       asp-route-searchString="@currentFilter">Price ↑</a>
-                </li>
-                <li>
-                    <a class="dropdown-item @(currentSort=="price_desc"?"active":"")"
-                       asp-action="Index"
-                       asp-route-sortOrder="price_desc"
-                       asp-route-searchString="@currentFilter">Price ↓</a>
-                </li>
+                <li><a class="dropdown-item @(currentSort=="price_asc"?"active":"")" asp-action="Index" asp-route-sortOrder="price_asc" asp-route-searchString="@currentFilter">Price ↑</a></li>
+                <li><a class="dropdown-item @(currentSort=="price_desc"?"active":"")" asp-action="Index" asp-route-sortOrder="price_desc" asp-route-searchString="@currentFilter">Price ↓</a></li>
             </ul>
         </div>
     </div>
@@ -240,7 +189,7 @@
             <th>@Html.DisplayNameFor(model => model.IsAvailable)</th>
             <th>@Html.DisplayNameFor(model => model.Location)</th>
             <th>Owner Name</th>
-            <th></th>
+            <th class="actions-header">Actions</th>
         </tr>
     </thead>
     <tbody>
@@ -253,25 +202,34 @@
             <td>@Html.DisplayFor(modelItem => item.IsAvailable)</td>
             <td>@Html.DisplayFor(modelItem => item.Location)</td>
             <td>@(item.Owner != null ? $"{item.Owner.FirstName} {item.Owner.LastName}" : item.OwnerId)</td>
-            <td>
-                @if (User.IsInRole("Owner") || User.IsInRole("Admin")) {
-                    <a asp-action="Edit" asp-route-id="@item.ItemId" class="vue-btn edit"><img class="button" src="~/images/edit.jpg" alt="Edit"/></a>
-                }
-                <a asp-action="Details" asp-route-id="@item.ItemId" class="vue-btn details"><img class="button" src="~/images/Details.jpg" alt="Details" /></a>
-                @if (User.IsInRole("Owner") || User.IsInRole("Admin")) {
-                    <a asp-action="Delete" asp-route-id="@item.ItemId" class="vue-btn delete"><img class="button" src="~/images/Delete.jpg" alt="Delete" /></a>
-                }
-
-                @* Rent button: renters (and admins for testing) can rent only available items *@
-                @if (item.IsAvailable && (User.IsInRole("Renter") || User.IsInRole("Admin"))) {
-                    <a asp-controller="Bookings"
-                       asp-action="Create"
-                       asp-route-itemId="@item.ItemId"
-                       class="rent"
-                       title="Rent this item">
-                        Rent
+            <td class="actions-cell">
+                <div class="actions">
+                    @if (User.IsInRole("Owner") || User.IsInRole("Admin")) {
+                        <a asp-action="Edit" asp-route-id="@item.ItemId" class="vue-btn edit">
+                            <img class="button" src="~/images/edit.jpg" alt="Edit" />
+                        </a>
+                    }
+                    <a asp-action="Details" asp-route-id="@item.ItemId" class="vue-btn details">
+                        <img class="button" src="~/images/Details.jpg" alt="Details" />
                     </a>
-                }
+                    @if (User.IsInRole("Owner") || User.IsInRole("Admin")) {
+                        <a asp-action="Delete" asp-route-id="@item.ItemId" class="vue-btn delete">
+                            <img class="button" src="~/images/Delete.jpg" alt="Delete" />
+                        </a>
+                    }
+
+                    @* Inline Rent button for available items with subtle divider *@
+                    @if (item.IsAvailable && (User.IsInRole("Renter") || User.IsInRole("Admin"))) {
+                        <span class="action-divider" role="separator" aria-hidden="true"></span>
+                        <a asp-controller="Bookings"
+                           asp-action="Create"
+                           asp-route-itemId="@item.ItemId"
+                           class="rent"
+                           title="Rent @item.Name">
+                            Rent
+                        </a>
+                    }
+                </div>
             </td>
         </tr>
 }
