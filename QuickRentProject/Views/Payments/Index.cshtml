@@ -7,130 +7,206 @@
         max-height: 26px;
         border-radius: 3px;
     }
-       .button {
+    .button {
         max-width: 36px;
         max-height: 26px;
         border-radius: 3px;
     }
     #vue-modern {
-  width: 100%;
-  border-collapse: collapse;
-  background: #fff;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  border-radius: 6px;
-  overflow: hidden;
-  margin-top: 20px;
-}
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      border-radius: 6px;
+      overflow: hidden;
+      margin-top: 20px;
+    }
 
-#vue-modern thead {
-  background-color: #f5f5f5;
-  font-weight: bold;
-}
+    #vue-modern thead { background-color: #f5f5f5; font-weight: bold; }
+    #vue-modern th, #vue-modern td { padding: 10px 14px; border-bottom: 1px solid #ddd; font-size: 14px; }
+    #vue-modern td:last-child { display: flex; justify-content: center; gap: 2px; }
 
-#vue-modern th,
-#vue-modern td {
-  padding: 10px 14px;
-  border-bottom: 1px solid #ddd;
-  font-size: 14px;
-}
+    #vue-modern .vue-btn {
+      border: none;
+      padding: 4px 6px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-#vue-modern td:last-child {
-  display: flex;
-  justify-content: center;
-  gap: 2px;
-}
+    #vue-modern .vue-btn.edit:hover { background-color: #e0a800; }
+    #vue-modern .vue-btn.details:hover { background-color: #138496; }
+    #vue-modern .vue-btn.delete:hover { background-color: #c82333; }
 
-#vue-modern .vue-btn {
-  border: none;
-  padding: 4px 6px;
-  border-radius: 4px;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
+    #vue-modern tbody tr:nth-child(odd) { background-color: #F6F6F3; }
+    #vue-modern tbody tr:nth-child(even) { background-color: #ffffff; }
+    #vue-modern tbody tr:hover { background-color: #f1f1f1; }
 
+    /* Sort dropdown styles */
+    .sort-dropdown { position: relative; }
+    .sort-dropdown .sort-btn {
+        background: #0078D4;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        font-size: 1.1rem;
+        font-weight: 500;
+        padding: 0.5rem 1rem;
+        cursor: pointer;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.07);
+        transition: background 0.2s ease, color 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .sort-dropdown .sort-btn:hover { background: #0a74c1; }
+    .sort-icon { display: inline-flex; width: 16px; height: 16px; }
+    .caret { display: inline-flex; width: 10px; height: 10px; }
 
-/* Hover Effects */
-#vue-modern .vue-btn.edit:hover {
-  background-color: #e0a800;
-}
-
-#vue-modern .vue-btn.details:hover {
-  background-color: #138496;
-}
-
-#vue-modern .vue-btn.delete:hover {
-  background-color: #c82333;
-}
-
-#vue-modern tbody tr:nth-child(odd) {
-  background-color: #F6F6F3; /* light grey */
-}
-
-#vue-modern tbody tr:nth-child(even) {
-  background-color: #ffffff; /* white */
-}
-#vue-modern tbody tr:hover {
-  background-color: #f1f1f1;
-}
-
+    .dropdown-menu {
+        position: absolute;
+        top: calc(100% + 6px);
+        left: 0;
+        z-index: 1000;
+        display: none;
+        min-width: 16rem;
+        padding: 0.5rem 0;
+        margin: 0;
+        font-size: 0.95rem;
+        color: #212529;
+        list-style: none;
+        background-color: #fff;
+        border: 1px solid rgba(0,0,0,.12);
+        border-radius: 8px;
+        box-shadow: 0 8px 24px rgba(0,0,0,.12);
+    }
+    .dropdown-menu.show { display: block; }
+    .dropdown-header { font-weight: 700; font-size: 12px; color: #6c757d; padding: .35rem 1rem; margin-top: .25rem; }
+    .dropdown-item { display: block; width: 100%; padding: .45rem 1rem; color: #212529; text-decoration: none; cursor: pointer; }
+    .dropdown-item:hover { background-color: #f8f9fa; }
+    .dropdown-item.active, .dropdown-item.active:focus, .dropdown-item.active:hover {
+        background-color: #E6F4FF; color: #0a58ca; font-weight: 600;
+    }
 </style>
 @model IEnumerable<QuickRentProject.Models.Payment>
 
 @{
     ViewData["Title"] = "Index";
+    var currentSort = (string)(ViewData["CurrentSort"] ?? "date_asc");
+    var currentFilter = (string)(ViewData["CurrentFilter"] ?? "");
 }
 
 <h1>Payments</h1>
 
-<p>
-    @if (!User.IsInRole("Owner")) {
-        <a asp-action="Create">Create New</a>
-    }
-</p>
-<form asp-action="Index" method="get">
-    <div class="form-actions no-color">
-        <p>
-            <label>Find by name: <input type="text" name="SearchString" value="@ViewData["CurrentFilter"]" /></label>
-            <input type="submit" value="Search" class="btn btn-default" /> |
-            <a asp-action="Index">Back to Full List</a>
-        </p>
+<form asp-action="Index" method="get" style="margin-bottom:2rem; display:flex; align-items:center; justify-content:space-between;">
+    <div style="display:flex; align-items:center; border:1px solid #ccc; border-radius:6px; padding:0.5rem 1rem; background:#fff; max-width:420px; width:100%; height:44px;">
+        <input type="text" name="SearchString" value="@currentFilter" placeholder="Find a payment" style="border:none; outline:none; flex:1; font-size:1rem; color:#444; height:100%;" />
+        <button type="submit" style="background:none; border:none; cursor:pointer; height:100%; display:flex; align-items:center;" title="Search">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#222" viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="11" cy="11" r="8" stroke="#222" stroke-width="2" fill="none"/>
+                <line x1="17" y1="17" x2="22" y2="22" stroke="#222" stroke-width="2"/>
+            </svg>
+        </button>
+        <a asp-action="Index" style="margin-left:1rem; display:flex; align-items:center; text-decoration:none; height:100%;" title="Clear search">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M15 19l-7-7 7-7" stroke="#222" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </a>
+    </div>
+
+    <div class="sort-dropdown dropdown">
+        <button id="paymentsSortDropdownBtn" class="sort-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true" aria-controls="paymentsSortDropdownMenu">
+            <span class="sort-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" focusable="false" aria-hidden="true">
+                    <path d="M10 6h10v2H10V6zM4 5h4v4H4V5zm6 6h10v2H10v-2zM4 11h4v4H4v-4zm6 6h10v2H10v-2zM4 17h4v4H4v-4z"></path>
+                </svg>
+            </span>
+            Sort
+            <span class="caret" aria-hidden="true">
+                <svg viewBox="0 0 16 16" width="10" height="10" fill="currentColor" focusable="false" aria-hidden="true">
+                    <path d="M3.2 5.5L8 10.3l4.8-4.8.7.7L8 11.7 2.5 6.2l.7-.7z"/>
+                </svg>
+            </span>
+        </button>
+        <ul id="paymentsSortDropdownMenu" class="dropdown-menu" role="menu" aria-labelledby="paymentsSortDropdownBtn">
+            <li><h6 class="dropdown-header">By amount</h6></li>
+            <li>
+                <a class="dropdown-item @(currentSort=="amount_asc"?"active":"")"
+                   asp-action="Index"
+                   asp-route-sortOrder="amount_asc"
+                   asp-route-searchString="@currentFilter">Amount ↑</a>
+            </li>
+            <li>
+                <a class="dropdown-item @(currentSort=="amount_desc"?"active":"")"
+                   asp-action="Index"
+                   asp-route-sortOrder="amount_desc"
+                   asp-route-searchString="@currentFilter">Amount ↓</a>
+            </li>
+
+            <li><h6 class="dropdown-header">By date</h6></li>
+            <li>
+                <a class="dropdown-item @(currentSort=="date_asc"?"active":"")"
+                   asp-action="Index"
+                   asp-route-sortOrder="date_asc"
+                   asp-route-searchString="@currentFilter">Date ↑</a>
+            </li>
+            <li>
+                <a class="dropdown-item @(currentSort=="date_desc"?"active":"")"
+                   asp-action="Index"
+                   asp-route-sortOrder="date_desc"
+                   asp-route-searchString="@currentFilter">Date ↓</a>
+            </li>
+
+            <li><h6 class="dropdown-header">By method</h6></li>
+            <li>
+                <a class="dropdown-item @(currentSort=="method_asc"?"active":"")"
+                   asp-action="Index"
+                   asp-route-sortOrder="method_asc"
+                   asp-route-searchString="@currentFilter">Method A→Z</a>
+            </li>
+            <li>
+                <a class="dropdown-item @(currentSort=="method_desc"?"active":"")"
+                   asp-action="Index"
+                   asp-route-sortOrder="method_desc"
+                   asp-route-searchString="@currentFilter">Method Z→A</a>
+            </li>
+
+            <li><h6 class="dropdown-header">By renter</h6></li>
+            <li>
+                <a class="dropdown-item @(currentSort=="booking_asc"?"active":"")"
+                   asp-action="Index"
+                   asp-route-sortOrder="booking_asc"
+                   asp-route-searchString="@currentFilter">Renter ↑</a>
+            </li>
+            <li>
+                <a class="dropdown-item @(currentSort=="booking_desc"?"active":"")"
+                   asp-action="Index"
+                   asp-route-sortOrder="booking_desc"
+                   asp-route-searchString="@currentFilter">Renter ↓</a>
+            </li>
+        </ul>
     </div>
 </form>
+
 <table class="table"  id="vue-modern" v-show="items.length">
     <thead>
         <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Amount)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.PaymentDate)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.PaymentMethod)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Booking)
-            </th>
+            <th>@Html.DisplayNameFor(model => model.Amount)</th>
+            <th>@Html.DisplayNameFor(model => model.PaymentDate)</th>
+            <th>@Html.DisplayNameFor(model => model.PaymentMethod)</th>
+            <th>Booking for</th>
             <th></th>
         </tr>
     </thead>
     <tbody>
 @foreach (var item in Model) {
         <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Amount)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.PaymentDate)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.PaymentMethod)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Booking.RenterId)
-            </td>
+            <td>@Html.DisplayFor(modelItem => item.Amount)</td>
+            <td>@Html.DisplayFor(modelItem => item.PaymentDate)</td>
+            <td>@Html.DisplayFor(modelItem => item.PaymentMethod)</td>
+            <td>@(item.Booking?.Renter != null ? $"{item.Booking.Renter.FirstName} {item.Booking.Renter.LastName}" : item.Booking?.RenterId)</td>
             <td>
                @if (!User.IsInRole("Owner")) {
                    <a asp-action="Edit" asp-route-id="@item.PaymentId" class="vue-btn edit"><img class="button" src="~/images/edit.jpg" alt="Alternate Text" /></a> 
@@ -144,3 +220,32 @@
 }
     </tbody>
 </table>
+
+@section Scripts {
+    <script>
+        (function () {
+            const btn = document.getElementById('paymentsSortDropdownBtn');
+            const menu = document.getElementById('paymentsSortDropdownMenu');
+
+            if (!btn || !menu) return;
+
+            function show() { menu.classList.add('show'); btn.setAttribute('aria-expanded', 'true'); }
+            function hide() { menu.classList.remove('show'); btn.setAttribute('aria-expanded', 'false'); }
+
+            btn.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                menu.classList.contains('show') ? hide() : show();
+            });
+
+            document.addEventListener('click', function () { hide(); });
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') hide();
+            });
+
+            menu.querySelectorAll('a.dropdown-item').forEach(a => {
+                a.addEventListener('click', () => hide());
+            });
+        })();
+    </script>
+}

@@ -21,22 +21,67 @@ namespace QuickRentProject.Controllers
         }
 
         // GET: Payments
-        public async Task<IActionResult> Index(string searchString)
+        public async Task<IActionResult> Index(string sortOrder, string searchString)
         {
-            
             ViewData["CurrentFilter"] = searchString;
-            var payments = from i in _context.Payment
-                       select i;
-            if (!String.IsNullOrEmpty(searchString))
+            ViewData["CurrentSort"] = string.IsNullOrEmpty(sortOrder) ? "date_asc" : sortOrder;
+
+            IQueryable<Payment> payments = _context.Payment
+                .Include(p => p.Booking)
+                .ThenInclude(b => b.Renter); // make renter name available
+
+            if (!string.IsNullOrEmpty(searchString))
             {
-                payments = payments.Where(i =>
-                    i.Amount.ToString().Contains(searchString) ||
-                    i.PaymentId.ToString().Contains(searchString)
-                );
+                payments = payments.Where(p =>
+                    p.Amount.ToString().Contains(searchString) ||
+                    p.PaymentId.ToString().Contains(searchString) ||
+                    (p.PaymentMethod != null && p.PaymentMethod.Contains(searchString)) ||
+                    (p.Booking != null && (
+                        p.Booking.RenterId.Contains(searchString) ||
+                        (p.Booking.Renter != null && (
+                            p.Booking.Renter.FirstName.Contains(searchString) ||
+                            p.Booking.Renter.LastName.Contains(searchString)
+                        ))
+                    )));
             }
+
+            switch (ViewData["CurrentSort"] as string)
+            {
+                case "amount_asc":
+                    payments = payments.OrderBy(p => p.Amount);
+                    break;
+                case "amount_desc":
+                    payments = payments.OrderByDescending(p => p.Amount);
+                    break;
+                case "date_asc":
+                    payments = payments.OrderBy(p => p.PaymentDate);
+                    break;
+                case "date_desc":
+                    payments = payments.OrderByDescending(p => p.PaymentDate);
+                    break;
+                case "method_asc":
+                    payments = payments.OrderBy(p => p.PaymentMethod);
+                    break;
+                case "method_desc":
+                    payments = payments.OrderByDescending(p => p.PaymentMethod);
+                    break;
+                case "booking_asc":
+                    payments = payments
+                        .OrderBy(p => p.Booking.Renter.FirstName)
+                        .ThenBy(p => p.Booking.Renter.LastName);
+                    break;
+                case "booking_desc":
+                    payments = payments
+                        .OrderByDescending(p => p.Booking.Renter.FirstName)
+                        .ThenByDescending(p => p.Booking.Renter.LastName);
+                    break;
+                default:
+                    payments = payments.OrderBy(p => p.PaymentDate);
+                    break;
+            }
+
             return View(await payments.AsNoTracking().ToListAsync());
         }
-
 
         // GET: Payments/Details/5
         public async Task<IActionResult> Details(int? id)
