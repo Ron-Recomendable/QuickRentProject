@@ -24,11 +24,6 @@ namespace QuickRentProject.Models
         [Display(Name = "Total Cost")]
         public decimal TotalCost { get; set; } // Total cost of the booking
 
-        [Required(ErrorMessage = "Please select a status")]
-        [MaxLength(20, ErrorMessage = "Status cannot exceed 20 characters")]
-        [Display(Name = "Status")]
-        public string Status { get; set; } // Status of the booking (e.g., Pending, Confirmed)
-
         // Foreign key to QuickRentProjectUser (Renter)
         [Required]
         public string RenterId { get; set; } // Renter who made the booking

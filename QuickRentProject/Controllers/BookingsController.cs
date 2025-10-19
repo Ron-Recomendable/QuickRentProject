@@ -42,8 +42,8 @@ namespace QuickRentProject.Controllers
             if (!string.IsNullOrEmpty(searchString))
             {
                 booking = booking.Where(b =>
-                    b.ItemId.ToString().Contains(searchString) ||
-                    (b.Status != null && b.Status.Contains(searchString)));
+                    b.ItemId.ToString().Contains(searchString)
+                );
             }
 
             switch (ViewData["CurrentSort"] as string)
@@ -58,10 +58,7 @@ namespace QuickRentProject.Controllers
                     booking = booking.OrderBy(b => b.TotalCost); break;
                 case "cost_desc":
                     booking = booking.OrderByDescending(b => b.TotalCost); break;
-                case "status_asc":
-                    booking = booking.OrderBy(b => b.Status); break;
-                case "status_desc":
-                    booking = booking.OrderByDescending(b => b.Status); break;
+        
                 case "item_asc":
                     booking = booking.OrderBy(b => b.Item.Name); break; // item name
                 case "item_desc":
@@ -125,7 +122,7 @@ namespace QuickRentProject.Controllers
         [HttpPost]
         [Authorize(Roles = "Admin,Renter")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("BookingId,StartDate,EndDate,TotalCost,Status,RenterId,ItemId")] Booking booking)
+        public async Task<IActionResult> Create([Bind("BookingId,StartDate,EndDate,TotalCost,RenterId,ItemId")] Booking booking)
         {
             // Lock renter to current user for Renter role
             if (User.IsInRole("Renter") && !User.IsInRole("Admin"))
@@ -208,7 +205,7 @@ namespace QuickRentProject.Controllers
         [HttpPost]
         [Authorize(Roles = "Admin,Renter")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("BookingId,StartDate,EndDate,TotalCost,Status,RenterId,ItemId")] Booking booking)
+        public async Task<IActionResult> Edit(int id, [Bind("BookingId,StartDate,EndDate,TotalCost,RenterId,ItemId")] Booking booking)
         {
             if (id != booking.BookingId) return NotFound();
 
