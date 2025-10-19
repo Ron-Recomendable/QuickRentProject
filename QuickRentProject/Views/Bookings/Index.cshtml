@@ -228,8 +228,8 @@
             <th>@Html.DisplayNameFor(model => model.EndDate)</th>
             <th>@Html.DisplayNameFor(model => model.TotalCost)</th>
             <th>@Html.DisplayNameFor(model => model.Status)</th>
-            <th>@Html.DisplayNameFor(model => model.Renter)</th>
-            <th>@Html.DisplayNameFor(model => model.Item)</th>
+            <th>Renter Name</th>
+            <th>Item Name</th>
             <th></th>
         </tr>
     </thead>
@@ -240,8 +240,8 @@
             <td>@Html.DisplayFor(modelItem => item.EndDate)</td>
             <td>@Html.DisplayFor(modelItem => item.TotalCost)</td>
             <td>@Html.DisplayFor(modelItem => item.Status)</td>
-            <td>@Html.DisplayFor(modelItem => item.Renter.Id)</td>
-            <td>@Html.DisplayFor(modelItem => item.Item.Category)</td>
+            <td>@(item.Renter != null ? $"{item.Renter.FirstName} {item.Renter.LastName}" : item.RenterId)</td>
+            <td>@(item.Item != null ? item.Item.Name : item.ItemId.ToString())</td>
             <td>
                 @if (!User.IsInRole("Owner")) {
                     <a asp-action="Edit" asp-route-id="@item.BookingId" class="vue-btn edit"><img class="button" src="~/images/edit.jpg" alt="Alternate Text" /></a>
