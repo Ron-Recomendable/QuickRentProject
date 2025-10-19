@@ -100,12 +100,14 @@
         background-color: #E6F4FF; color: #0a58ca; font-weight: 600;
     }
 </style>
+@using System.Security.Claims
 @model IEnumerable<QuickRentProject.Models.Payment>
 
 @{
     ViewData["Title"] = "Index";
     var currentSort = (string)(ViewData["CurrentSort"] ?? "date_asc");
     var currentFilter = (string)(ViewData["CurrentFilter"] ?? "");
+    var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 }
 
 <h1>Payments</h1>
@@ -218,13 +220,13 @@
             <td>@Html.DisplayFor(modelItem => item.PaymentMethod)</td>
             <td>@(item.Booking?.Renter != null ? $"{item.Booking.Renter.FirstName} {item.Booking.Renter.LastName}" : item.Booking?.RenterId)</td>
             <td>
-               @if (!User.IsInRole("Owner")) {
-                   <a asp-action="Edit" asp-route-id="@item.PaymentId" class="vue-btn edit"><img class="button" src="~/images/edit.jpg" alt="Alternate Text" /></a> 
-               }
-               <a asp-action="Details" asp-route-id="@item.PaymentId" class="vue-btn details"><img class="button" src="~/images/Details.jpg" alt="Alternate Text" /></a> 
-               @if (!User.IsInRole("Owner")) {
-                   <a asp-action="Delete" asp-route-id="@item.PaymentId" class="vue-btn delete"><img class="button" src="~/images/Delete.jpg" alt="Alternate Text" /></a>
-               }
+                @if (User.IsInRole("Admin") || (User.IsInRole("Renter") && item.Booking?.RenterId == currentUserId)) {
+                    <a asp-action="Edit" asp-route-id="@item.PaymentId" class="vue-btn edit"><img class="button" src="~/images/edit.jpg" alt="Edit" /></a>
+                }
+                <a asp-action="Details" asp-route-id="@item.PaymentId" class="vue-btn details"><img class="button" src="~/images/Details.jpg" alt="Details" /></a>
+                @if (User.IsInRole("Admin") || (User.IsInRole("Renter") && item.Booking?.RenterId == currentUserId)) {
+                    <a asp-action="Delete" asp-route-id="@item.PaymentId" class="vue-btn delete"><img class="button" src="~/images/Delete.jpg" alt="Delete" /></a>
+                }
             </td>
         </tr>
 }

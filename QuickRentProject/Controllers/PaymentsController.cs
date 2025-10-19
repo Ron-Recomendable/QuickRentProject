@@ -1,16 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using QuickRentProject.Models;
 using QuickRentProjectDb.Data;
-using Microsoft.AspNetCore.Authorization;
 
 namespace QuickRentProject.Controllers
 {
+    [Authorize] // must be signed-in
     public class PaymentsController : Controller
     {
         private readonly QuickRentProjectDbContext _context;
@@ -26,23 +27,29 @@ namespace QuickRentProject.Controllers
             ViewData["CurrentFilter"] = searchString;
             ViewData["CurrentSort"] = string.IsNullOrEmpty(sortOrder) ? "date_asc" : sortOrder;
 
-            IQueryable<Payment> payments = _context.Payment
+            var payments = _context.Payment
                 .Include(p => p.Booking)
-                .ThenInclude(b => b.Renter); // make renter name available
+                    .ThenInclude(b => b.Renter)
+                .Include(p => p.Booking)
+                    .ThenInclude(b => b.Item)
+                .AsQueryable();
 
-            if (!string.IsNullOrEmpty(searchString))
+            // Renters only see their own payments
+            if (User.IsInRole("Renter") && !User.IsInRole("Admin"))
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                payments = payments.Where(p => p.Booking.RenterId == userId);
+            }
+
+            if (!string.IsNullOrWhiteSpace(searchString))
             {
                 payments = payments.Where(p =>
                     p.Amount.ToString().Contains(searchString) ||
-                    p.PaymentId.ToString().Contains(searchString) ||
-                    (p.PaymentMethod != null && p.PaymentMethod.Contains(searchString)) ||
-                    (p.Booking != null && (
-                        p.Booking.RenterId.Contains(searchString) ||
-                        (p.Booking.Renter != null && (
-                            p.Booking.Renter.FirstName.Contains(searchString) ||
-                            p.Booking.Renter.LastName.Contains(searchString)
-                        ))
-                    )));
+                    p.PaymentMethod.Contains(searchString) ||
+                    (p.Booking.Item != null && p.Booking.Item.Name.Contains(searchString)) ||
+                    (p.Booking.Renter != null && (
+                        p.Booking.Renter.FirstName.Contains(searchString) ||
+                        p.Booking.Renter.LastName.Contains(searchString))));
             }
 
             switch (ViewData["CurrentSort"] as string)
@@ -104,9 +111,41 @@ namespace QuickRentProject.Controllers
 
         // GET: Payments/Create
         [Authorize(Roles = "Admin,Renter")]
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            ViewData["BookingId"] = new SelectList(_context.Booking, "BookingId", "RenterId");
+            // Restrict booking selection
+            if (User.IsInRole("Renter") && !User.IsInRole("Admin"))
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var myBookings = await _context.Booking
+                    .Include(b => b.Item)
+                    .Where(b => b.RenterId == userId)
+                    .Select(b => new
+                    {
+                        b.BookingId,
+                        Label = b.Item != null
+                            ? $"{b.Item.Name} ({b.StartDate:yyyy-MM-dd} → {b.EndDate:yyyy-MM-dd})"
+                            : $"Booking #{b.BookingId}"
+                    })
+                    .ToListAsync();
+
+                ViewData["BookingId"] = new SelectList(myBookings, "BookingId", "Label");
+            }
+            else
+            {
+                var allBookings = await _context.Booking
+                    .Include(b => b.Item)
+                    .Include(b => b.Renter)
+                    .Select(b => new
+                    {
+                        b.BookingId,
+                        Label = $"{b.Renter.FirstName} {b.Renter.LastName} - {(b.Item != null ? b.Item.Name : "Item")} ({b.StartDate:yyyy-MM-dd} → {b.EndDate:yyyy-MM-dd})"
+                    })
+                    .ToListAsync();
+
+                ViewData["BookingId"] = new SelectList(allBookings, "BookingId", "Label");
+            }
+
             return View();
         }
 
@@ -118,13 +157,23 @@ namespace QuickRentProject.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("PaymentId,Amount,PaymentDate,PaymentMethod,BookingId")] Payment payment)
         {
-            if (!ModelState.IsValid)
+            // Ownership check on selected booking
+            if (User.IsInRole("Renter") && !User.IsInRole("Admin"))
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var booking = await _context.Booking.AsNoTracking().FirstOrDefaultAsync(b => b.BookingId == payment.BookingId);
+                if (booking == null || booking.RenterId != userId) return Forbid();
+            }
+
+            if (ModelState.IsValid)
             {
                 _context.Add(payment);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["BookingId"] = new SelectList(_context.Booking, "BookingId", "RenterId", payment.BookingId);
+
+            // Rebuild booking list if validation failed
+            await Create();
             return View(payment);
         }
 
@@ -132,18 +181,52 @@ namespace QuickRentProject.Controllers
         [Authorize(Roles = "Admin,Renter")]
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null)
+            if (id == null) return NotFound();
+
+            var payment = await _context.Payment
+                .Include(p => p.Booking)
+                .ThenInclude(b => b.Item)
+                .FirstOrDefaultAsync(p => p.PaymentId == id);
+            if (payment == null) return NotFound();
+
+            // Ownership guard
+            if (User.IsInRole("Renter") && !User.IsInRole("Admin"))
             {
-                return NotFound();
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var booking = await _context.Booking.AsNoTracking().FirstOrDefaultAsync(b => b.BookingId == payment.BookingId);
+                if (booking == null || booking.RenterId != userId) return Forbid();
+
+                // Restrict selectable bookings to current renter
+                var myBookings = await _context.Booking
+                    .Include(b => b.Item)
+                    .Where(b => b.RenterId == userId)
+                    .Select(b => new
+                    {
+                        b.BookingId,
+                        Label = b.Item != null
+                            ? $"{b.Item.Name} ({b.StartDate:yyyy-MM-dd} → {b.EndDate:yyyy-MM-dd})"
+                            : $"Booking #{b.BookingId}"
+                    })
+                    .ToListAsync();
+
+                ViewData["BookingId"] = new SelectList(myBookings, "BookingId", "Label", payment.BookingId);
+            }
+            else
+            {
+                var allBookings = await _context.Booking
+                    .Include(b => b.Item)
+                    .Include(b => b.Renter)
+                    .Select(b => new
+                    {
+                        b.BookingId,
+                        Label = $"{b.Renter.FirstName} {b.Renter.LastName} - {(b.Item != null ? b.Item.Name : "Item")} ({b.StartDate:yyyy-MM-dd} → {b.EndDate:yyyy-MM-dd})"
+                    })
+                    .ToListAsync();
+
+                ViewData["BookingId"] = new SelectList(allBookings, "BookingId", "Label", payment.BookingId);
             }
 
-            var payment = await _context.Payment.FindAsync(id);
-            if (payment == null)
-            {
-                return NotFound();
-            }
-            ViewData["BookingId"] = new SelectList(_context.Booking, "BookingId", "RenterId", payment.BookingId);
-            return View(payment);   
+            return View(payment);
         }
 
         // POST: Payments/Edit/5
@@ -154,52 +237,62 @@ namespace QuickRentProject.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("PaymentId,Amount,PaymentDate,PaymentMethod,BookingId")] Payment payment)
         {
-            if (id != payment.PaymentId)
+            if (id != payment.PaymentId) return NotFound();
+
+            // Ownership guard for both existing payment and new BookingId
+            if (User.IsInRole("Renter") && !User.IsInRole("Admin"))
             {
-                return NotFound();
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                var existing = await _context.Payment
+                    .Include(p => p.Booking)
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(p => p.PaymentId == id);
+                if (existing == null || existing.Booking.RenterId != userId) return Forbid();
+
+                var targetBooking = await _context.Booking.AsNoTracking().FirstOrDefaultAsync(b => b.BookingId == payment.BookingId);
+                if (targetBooking == null || targetBooking.RenterId != userId) return Forbid();
             }
 
-            if (!ModelState.IsValid)
+            if (ModelState.IsValid)
             {
                 try
                 {
                     _context.Update(payment);
                     await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!PaymentExists(payment.PaymentId))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    if (!await _context.Payment.AnyAsync(e => e.PaymentId == id)) return NotFound();
+                    throw;
                 }
-                return RedirectToAction(nameof(Index));
             }
-            ViewData["BookingId"] = new SelectList(_context.Booking, "BookingId", "RenterId", payment.BookingId);
-            return View(payment);
+
+            // Rebuild lists if validation fails
+            return await Edit(id);
         }
 
         // GET: Payments/Delete/5
         [Authorize(Roles = "Admin,Renter")]
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
             var payment = await _context.Payment
                 .Include(p => p.Booking)
+                    .ThenInclude(b => b.Renter)
+                .Include(p => p.Booking)
+                    .ThenInclude(b => b.Item)
                 .FirstOrDefaultAsync(m => m.PaymentId == id);
-            if (payment == null)
+            if (payment == null) return NotFound();
+
+            if (User.IsInRole("Renter") && !User.IsInRole("Admin"))
             {
-                return NotFound();
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (payment.Booking.RenterId != userId) return Forbid();
             }
-            
+
             return View(payment);
         }
 
@@ -209,19 +302,22 @@ namespace QuickRentProject.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var payment = await _context.Payment.FindAsync(id);
+            var payment = await _context.Payment
+                .Include(p => p.Booking)
+                .FirstOrDefaultAsync(p => p.PaymentId == id);
             if (payment != null)
             {
+                if (User.IsInRole("Renter") && !User.IsInRole("Admin"))
+                {
+                    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                    if (payment.Booking.RenterId != userId) return Forbid();
+                }
+
                 _context.Payment.Remove(payment);
+                await _context.SaveChangesAsync();
             }
 
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool PaymentExists(int id)
-        {
-            return _context.Payment.Any(e => e.PaymentId == id);
         }
     }
 }
