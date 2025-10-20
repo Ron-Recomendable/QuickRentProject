@@ -132,7 +132,6 @@ namespace QuickRentProject.Controllers
                     .FirstOrDefaultAsync(b => b.BookingId == bookingId.Value);
                 if (booking != null)
                 {
-                    // Optional ownership check for renters
                     if (User.IsInRole("Renter") && !User.IsInRole("Admin"))
                     {
                         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -142,6 +141,10 @@ namespace QuickRentProject.Controllers
                     model.BookingId = booking.BookingId;
                     model.Amount = booking.TotalCost; // maintain amount from booking
                     ViewBag.LockAmount = true;        // hint view to render as read-only
+
+                    // Set client min/max for date: StartDate .. EndDate + 7 days
+                    ViewBag.PaymentMinDate = booking.StartDate.Date.ToString("yyyy-MM-dd");
+                    ViewBag.PaymentMaxDate = booking.EndDate.Date.AddDays(7).ToString("yyyy-MM-dd");
                 }
             }
 
@@ -169,6 +172,15 @@ namespace QuickRentProject.Controllers
             if (sourceBooking == null) return NotFound();
             payment.Amount = sourceBooking.TotalCost;
 
+            // Server-side date window: StartDate .. EndDate + 7 days
+            var minDate = sourceBooking.StartDate.Date;
+            var maxDate = sourceBooking.EndDate.Date.AddDays(7);
+            if (payment.PaymentDate.Date < minDate || payment.PaymentDate.Date > maxDate)
+            {
+                ModelState.AddModelError(nameof(payment.PaymentDate),
+                    $"Payment date must be between {minDate:yyyy-MM-dd} and {maxDate:yyyy-MM-dd}.");
+            }
+
             if (!ModelState.IsValid)
             {
                 _context.Add(payment);
@@ -176,8 +188,44 @@ namespace QuickRentProject.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            // If validation failed, rebuild dropdown with selected booking and prefill again
-            return await Create(payment.BookingId);
+            // If validation failed, rebuild dropdown and client min/max
+            if (User.IsInRole("Renter") && !User.IsInRole("Admin"))
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var myBookings = await _context.Booking
+                    .Include(b => b.Item)
+                    .Where(b => b.RenterId == userId)
+                    .Select(b => new
+                    {
+                        b.BookingId,
+                        Label = b.Item != null
+                            ? $"{b.Item.Name} ({b.StartDate:yyyy-MM-dd} → {b.EndDate:yyyy-MM-dd})"
+                            : $"Booking #{b.BookingId}"
+                    })
+                    .ToListAsync();
+
+                ViewData["BookingId"] = new SelectList(myBookings, "BookingId", "Label", payment.BookingId);
+            }
+            else
+            {
+                var allBookings = await _context.Booking
+                    .Include(b => b.Item)
+                    .Include(b => b.Renter)
+                    .Select(b => new
+                    {
+                        b.BookingId,
+                        Label = $"{b.Renter.FirstName} {b.Renter.LastName} - {(b.Item != null ? b.Item.Name : "Item")} ({b.StartDate:yyyy-MM-dd} → {b.EndDate:yyyy-MM-dd})"
+                    })
+                    .ToListAsync();
+
+                ViewData["BookingId"] = new SelectList(allBookings, "BookingId", "Label", payment.BookingId);
+            }
+
+            ViewBag.LockAmount = true;
+            ViewBag.PaymentMinDate = minDate.ToString("yyyy-MM-dd");
+            ViewBag.PaymentMaxDate = maxDate.ToString("yyyy-MM-dd");
+
+            return View(payment);
         }
 
         // GET: Payments/Edit/5
@@ -228,6 +276,13 @@ namespace QuickRentProject.Controllers
                 ViewData["BookingId"] = new SelectList(allBookings, "BookingId", "Label", payment.BookingId);
             }
 
+            // Set client min/max for date: StartDate .. EndDate + 7 days
+            if (payment.Booking != null)
+            {
+                ViewBag.PaymentMinDate = payment.Booking.StartDate.Date.ToString("yyyy-MM-dd");
+                ViewBag.PaymentMaxDate = payment.Booking.EndDate.Date.AddDays(7).ToString("yyyy-MM-dd");
+            }
+
             return View(payment);
         }
 
@@ -253,6 +308,21 @@ namespace QuickRentProject.Controllers
                 if (targetBooking == null || targetBooking.RenterId != userId) return Forbid();
             }
 
+            // Enforce amount and date window based on selected booking
+            var bookingForPayment = await _context.Booking.AsNoTracking()
+                .FirstOrDefaultAsync(b => b.BookingId == payment.BookingId);
+            if (bookingForPayment == null) return NotFound();
+
+            payment.Amount = bookingForPayment.TotalCost;
+
+            var minDate = bookingForPayment.StartDate.Date;
+            var maxDate = bookingForPayment.EndDate.Date.AddDays(7);
+            if (payment.PaymentDate.Date < minDate || payment.PaymentDate.Date > maxDate)
+            {
+                ModelState.AddModelError(nameof(payment.PaymentDate),
+                    $"Payment date must be between {minDate:yyyy-MM-dd} and {maxDate:yyyy-MM-dd}.");
+            }
+
             if (!ModelState.IsValid)
             {
                 try
@@ -268,8 +338,43 @@ namespace QuickRentProject.Controllers
                 }
             }
 
-            // rebuild lists if validation fails
-            return await Edit(id);
+            // Rebuild dropdown and client min/max if validation fails
+            if (User.IsInRole("Renter") && !User.IsInRole("Admin"))
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var myBookings = await _context.Booking
+                    .Include(b => b.Item)
+                    .Where(b => b.RenterId == userId)
+                    .Select(b => new
+                    {
+                        b.BookingId,
+                        Label = b.Item != null
+                            ? $"{b.Item.Name} ({b.StartDate:yyyy-MM-dd} → {b.EndDate:yyyy-MM-dd})"
+                            : $"Booking #{b.BookingId}"
+                    })
+                    .ToListAsync();
+
+                ViewData["BookingId"] = new SelectList(myBookings, "BookingId", "Label", payment.BookingId);
+            }
+            else
+            {
+                var allBookings = await _context.Booking
+                    .Include(b => b.Item)
+                    .Include(b => b.Renter)
+                    .Select(b => new
+                    {
+                        b.BookingId,
+                        Label = $"{b.Renter.FirstName} {b.Renter.LastName} - {(b.Item != null ? b.Item.Name : "Item")} ({b.StartDate:yyyy-MM-dd} → {b.EndDate:yyyy-MM-dd})"
+                    })
+                    .ToListAsync();
+
+                ViewData["BookingId"] = new SelectList(allBookings, "BookingId", "Label", payment.BookingId);
+            }
+
+            ViewBag.PaymentMinDate = minDate.ToString("yyyy-MM-dd");
+            ViewBag.PaymentMaxDate = maxDate.ToString("yyyy-MM-dd");
+
+            return View(payment);
         }
 
         // GET: Payments/Delete/5
