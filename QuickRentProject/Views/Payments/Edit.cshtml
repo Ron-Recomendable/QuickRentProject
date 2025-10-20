@@ -13,11 +13,20 @@
         <form asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="PaymentId" />
+
             <div class="form-group">
                 <label asp-for="Amount" class="control-label"></label>
-                <input asp-for="Amount" class="form-control" />
+                <input asp-for="Amount"
+                       class="form-control"
+                       placeholder="$0 - $10,000"
+                       readonly="@(ViewBag.LockAmount == true ? "readonly" : null)" />
                 <span asp-validation-for="Amount" class="text-danger"></span>
+                @if (ViewBag.LockAmount == true)
+                {
+                    <small class="form-text text-muted">Amount is set from the booking total.</small>
+                }
             </div>
+
             <div class="form-group">
                 <label asp-for="PaymentDate" class="control-label"></label>
                 <input asp-for="PaymentDate"
@@ -28,16 +37,25 @@
                        max="@(ViewBag.PaymentMaxDate ?? null)" />
                 <span asp-validation-for="PaymentDate" class="text-danger"></span>
             </div>
+
             <div class="form-group">
                 <label asp-for="PaymentMethod" class="control-label"></label>
-                <input asp-for="PaymentMethod" class="form-control" />
+                <select asp-for="PaymentMethod" class="form-control" required>
+                    <option value="">-- Select payment method --</option>
+                    <option>Cash</option>
+                    <option>Debit cards / EFTPOS cards</option>
+                    <option>Credit cards</option>
+                    <option>Bank transfer</option>
+                </select>
                 <span asp-validation-for="PaymentMethod" class="text-danger"></span>
             </div>
+
             <div class="form-group">
                 <label asp-for="BookingId" class="control-label"></label>
                 <select asp-for="BookingId" class="form-control" asp-items="ViewBag.BookingId"></select>
                 <span asp-validation-for="BookingId" class="text-danger"></span>
             </div>
+
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />
             </div>

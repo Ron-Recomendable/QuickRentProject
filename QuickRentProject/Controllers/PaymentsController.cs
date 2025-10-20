@@ -283,6 +283,9 @@ namespace QuickRentProject.Controllers
                 ViewBag.PaymentMaxDate = payment.Booking.EndDate.Date.AddDays(7).ToString("yyyy-MM-dd");
             }
 
+            // Lock amount on the Edit view like Create
+            ViewBag.LockAmount = true;
+
             return View(payment);
         }
 
@@ -373,6 +376,7 @@ namespace QuickRentProject.Controllers
 
             ViewBag.PaymentMinDate = minDate.ToString("yyyy-MM-dd");
             ViewBag.PaymentMaxDate = maxDate.ToString("yyyy-MM-dd");
+            ViewBag.LockAmount = true;
 
             return View(payment);
         }
