@@ -91,6 +91,7 @@ namespace QuickRentProject.Controllers
         [Authorize(Roles = "Admin,Renter")]
         public async Task<IActionResult> Create(int? bookingId = null)
         {
+            // Build booking dropdown (existing logic)
             if (User.IsInRole("Renter") && !User.IsInRole("Admin"))
             {
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -123,7 +124,28 @@ namespace QuickRentProject.Controllers
                 ViewData["BookingId"] = new SelectList(allBookings, "BookingId", "Label", bookingId);
             }
 
-            return View();
+            // Prefill amount from booking if bookingId is provided (so renter won't have to type it)
+            Payment model = new Payment { PaymentDate = DateTime.Now };
+            if (bookingId.HasValue)
+            {
+                var booking = await _context.Booking.AsNoTracking()
+                    .FirstOrDefaultAsync(b => b.BookingId == bookingId.Value);
+                if (booking != null)
+                {
+                    // Optional ownership check for renters
+                    if (User.IsInRole("Renter") && !User.IsInRole("Admin"))
+                    {
+                        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                        if (booking.RenterId != userId) return Forbid();
+                    }
+
+                    model.BookingId = booking.BookingId;
+                    model.Amount = booking.TotalCost; // maintain amount from booking
+                    ViewBag.LockAmount = true;        // hint view to render as read-only
+                }
+            }
+
+            return View(model);
         }
 
         // POST: Payments/Create
@@ -132,12 +154,20 @@ namespace QuickRentProject.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("PaymentId,Amount,PaymentDate,PaymentMethod,BookingId")] Payment payment)
         {
+            // Validate renter owns the booking
             if (User.IsInRole("Renter") && !User.IsInRole("Admin"))
             {
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                var booking = await _context.Booking.AsNoTracking().FirstOrDefaultAsync(b => b.BookingId == payment.BookingId);
+                var booking = await _context.Booking.AsNoTracking()
+                    .FirstOrDefaultAsync(b => b.BookingId == payment.BookingId);
                 if (booking == null || booking.RenterId != userId) return Forbid();
             }
+
+            // Always maintain amount server-side from the booking to prevent tampering
+            var sourceBooking = await _context.Booking.AsNoTracking()
+                .FirstOrDefaultAsync(b => b.BookingId == payment.BookingId);
+            if (sourceBooking == null) return NotFound();
+            payment.Amount = sourceBooking.TotalCost;
 
             if (!ModelState.IsValid)
             {
@@ -146,7 +176,7 @@ namespace QuickRentProject.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            // rebuild booking list if validation failed
+            // If validation failed, rebuild dropdown with selected booking and prefill again
             return await Create(payment.BookingId);
         }
 
