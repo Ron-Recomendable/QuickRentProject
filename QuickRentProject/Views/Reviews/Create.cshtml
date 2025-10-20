@@ -9,32 +9,41 @@
 <h4>Review</h4>
 <hr />
 <div class="row">
-    <div class="col-md-4">
+    <div class="col-md-6">
         <form asp-action="Create">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="form-group">
+                <label for="ItemId" class="control-label">Item</label>
+                <select asp-for="ItemId" class="form-control" asp-items="ViewBag.ItemId"></select>
+                <span asp-validation-for="ItemId" class="text-danger"></span>
+            </div>
+
             <div class="form-group">
                 <label asp-for="Rating" class="control-label"></label>
-                <input asp-for="Rating" class="form-control" />
+                <input asp-for="Rating" class="form-control" min="1" max="5" />
+                <small class="form-text text-muted">1 to 5</small>
                 <span asp-validation-for="Rating" class="text-danger"></span>
             </div>
+
             <div class="form-group">
                 <label asp-for="Comment" class="control-label"></label>
-                <input asp-for="Comment" class="form-control" />
+                <textarea asp-for="Comment" class="form-control"></textarea>
                 <span asp-validation-for="Comment" class="text-danger"></span>
             </div>
+
             <div class="form-group">
-                <label asp-for="ReviewDate" class="control-label"></label>
-                <input asp-for="ReviewDate" class="form-control" />
-                <span asp-validation-for="ReviewDate" class="text-danger"></span>
+                <label>Review Date</label>
+                <input class="form-control" value="@ViewBag.Today" readonly />
+                <small class="form-text text-muted">Set automatically to today's date.</small>
             </div>
+
             <div class="form-group">
-                <label asp-for="ItemId" class="control-label"></label>
-                <select asp-for="ItemId" class ="form-control" asp-items="ViewBag.ItemId"></select>
+                <label>Reviewer</label>
+                <input class="form-control" value="@ViewBag.CurrentUserName" readonly />
+                <small class="form-text text-muted">Linked to your account.</small>
             </div>
-            <div class="form-group">
-                <label asp-for="UserId" class="control-label"></label>
-                <select asp-for="UserId" class ="form-control" asp-items="ViewBag.UserId"></select>
-            </div>
+
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
             </div>
