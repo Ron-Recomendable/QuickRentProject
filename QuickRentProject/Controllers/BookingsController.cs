@@ -12,6 +12,7 @@ using System.Security.Claims;
 
 namespace QuickRentProject.Controllers
 {
+    [Authorize]
     public class BookingsController : Controller
     {
         private readonly QuickRentProjectDbContext _context;
@@ -67,7 +68,6 @@ namespace QuickRentProject.Controllers
                     booking = booking.OrderBy(b => b.TotalCost); break;
                 case "cost_desc":
                     booking = booking.OrderByDescending(b => b.TotalCost); break;
-        
                 case "item_asc":
                     booking = booking.OrderBy(b => b.Item.Name); break; // item name
                 case "item_desc":
@@ -122,6 +122,16 @@ namespace QuickRentProject.Controllers
                 var user = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId);
                 ViewData["RenterFullName"] = user != null ? $"{user.FirstName} {user.LastName}" : userId;
                 ViewData["RenterId"] = userId; // will be posted via hidden input
+
+                // Prefill renter's TotalCost when coming from Items "Rent" button
+                if (itemId.HasValue)
+                {
+                    var selectedItem = await _context.Item.AsNoTracking().FirstOrDefaultAsync(i => i.ItemId == itemId.Value);
+                    if (selectedItem != null)
+                    {
+                        ViewBag.SelectedItemPrice = selectedItem.Price;
+                    }
+                }
             }
             else
             {
@@ -162,6 +172,14 @@ namespace QuickRentProject.Controllers
             if (start > now.AddDays(14)) ModelState.AddModelError(nameof(Booking.StartDate), "Start must be within the next 14 days.");
             if (end <= start) ModelState.AddModelError(nameof(Booking.EndDate), "End must be after the start.");
             if (end > start.AddMonths(12)) ModelState.AddModelError(nameof(Booking.EndDate), "Booking cannot exceed 12 months.");
+
+            // Force server-side price for Renters based on selected item
+            if (User.IsInRole("Renter") && !User.IsInRole("Admin"))
+            {
+                var item = await _context.Item.AsNoTracking().FirstOrDefaultAsync(i => i.ItemId == booking.ItemId);
+                if (item == null) return NotFound();
+                booking.TotalCost = item.Price; // fixed amount per item
+            }
 
             if (!ModelState.IsValid)
             {
@@ -258,6 +276,11 @@ namespace QuickRentProject.Controllers
                 var dbBooking = await _context.Booking.AsNoTracking().FirstOrDefaultAsync(b => b.BookingId == id);
                 if (dbBooking == null || dbBooking.RenterId != userId) return Forbid();
                 booking.RenterId = userId;
+
+                // Force server-side price for Renters based on selected item
+                var item = await _context.Item.AsNoTracking().FirstOrDefaultAsync(i => i.ItemId == booking.ItemId);
+                if (item == null) return NotFound();
+                booking.TotalCost = item.Price; // fixed amount per item
             }
 
             var now = DateTime.Now;
