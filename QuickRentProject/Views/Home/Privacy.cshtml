@@ -1,12 +1,87 @@
-﻿<style>
+﻿@{
+    ViewData["Title"] = "Privacy Policy";
+}
+
+<style>
     body {
         background: #F4F4F4;
     }
 
-</style>
-@{
-    ViewData["Title"] = "Privacy Policy";
-}
-<h1>@ViewData["Title"]</h1>
+    .policy {
+        max-width: 900px;
+        margin: 2rem auto;
+        padding: 1.5rem;
+        background: #ffffff;
+        border-radius: 8px;
+    }
 
-<p>Use this page to detail your site's privacy policy.</p>
+        .policy h1 {
+            margin-top: 0;
+        }
+
+        .policy h2 {
+            font-size: 1.25rem;
+            margin-top: 1rem;
+        }
+</style>
+
+<div class="policy">
+    <h1>@ViewData["Title"]</h1>
+
+    <p>
+        QuickRent respects your privacy and is committed to protecting your personal information.
+        This policy explains how we collect, use, and safeguard your data while using our website and services.
+    </p>
+
+    <ol>
+        <li>
+            <h2>Information We Collect</h2>
+            <p>
+                We collect personal information that you provide during registration, booking, and payment.
+                This may include your name, email address, phone number, and payment details.
+            </p>
+        </li>
+
+        <li>
+            <h2>How We Use Information</h2>
+            <p>
+                Your data is used only for managing your account, processing bookings and payments,
+                and improving our services. We do not sell or share personal information with third parties.
+            </p>
+        </li>
+
+        <li>
+            <h2>Data Protection</h2>
+            <p>
+                All personal information is stored securely. Access is restricted to authorized users,
+                and sensitive data such as passwords are encrypted.
+            </p>
+        </li>
+
+        <li>
+            <h2>Cookies</h2>
+            <p>
+                QuickRent may use cookies to improve your browsing experience. You can choose to disable
+                cookies in your browser settings.
+            </p>
+        </li>
+
+        <li>
+            <h2>User Rights</h2>
+            <p>
+                You have the right to view, update, or delete your account information at any time
+                by contacting the administrator.
+            </p>
+        </li>
+
+        <li>
+            <h2>Changes to this Policy</h2>
+            <p>
+                QuickRent may update this Privacy Policy from time to time. Users will be notified of
+                significant changes on this page.
+            </p>
+        </li>
+    </ol>
+
+  
+</div>
