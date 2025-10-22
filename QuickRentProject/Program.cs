@@ -8,7 +8,7 @@ var connectionString = builder.Configuration.GetConnectionString("QuickRentProje
 builder.Services.AddDbContext<QuickRentProjectDbContext>(options => options.UseSqlServer(connectionString));
 
 builder.Services.AddDefaultIdentity<QuickRentProjectUser>(options => options.SignIn.RequireConfirmedAccount = true)
-    .AddRoles<IdentityRole>() // Add this line
+    .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<QuickRentProjectDbContext>();
 
 // Add services to the container.
@@ -20,7 +20,6 @@ var app = builder.Build();
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
@@ -29,8 +28,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-app.UseAuthentication(); // <-- required before authorization
-
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapRazorPages();
@@ -53,7 +51,35 @@ using (var scope = app.Services.CreateScope())
 
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<QuickRentProjectUser>>();
 
-    
+    // Ensure default Admin user exists
+    var adminEmail = "admin@example.com";
+    var adminUser = await userManager.FindByEmailAsync(adminEmail);
+    if (adminUser == null)
+    {
+        adminUser = new QuickRentProjectUser
+        {
+            UserName = adminEmail,
+            Email = adminEmail,
+            FirstName = "Admin",
+            LastName = "User",
+            PhoneNumber = "0000000000",
+            Role = "Admin",
+            EmailConfirmed = true // Allow immediate login with RequireConfirmedAccount = true
+        };
+
+        var createResult = await userManager.CreateAsync(adminUser, "Admin#12345");
+        if (!createResult.Succeeded)
+        {
+            // Optionally log errors here
+        }
+    }
+
+    if (!await userManager.IsInRoleAsync(adminUser, "Admin"))
+    {
+        await userManager.AddToRoleAsync(adminUser, "Admin");
+    }
+
+    // Optionally keep role assignments for sample users if they exist
     var ownerUser = await userManager.FindByEmailAsync("owner@example.com");
     if (ownerUser != null && !await userManager.IsInRoleAsync(ownerUser, "Owner"))
     {
@@ -65,13 +91,6 @@ using (var scope = app.Services.CreateScope())
     {
         await userManager.AddToRoleAsync(renterUser, "Renter");
     }
-
-    var adminUser = await userManager.FindByEmailAsync("admin@example.com");
-    if (adminUser != null && !await userManager.IsInRoleAsync(adminUser, "Admin"))
-    {
-        await userManager.AddToRoleAsync(adminUser, "Admin");
-    }
-
 }
 
 app.Run();
