@@ -38,8 +38,6 @@
                 <span asp-validation-for="TotalCost" class="text-danger"></span>
             </div>
 
-   
-
             @if (User.IsInRole("Renter") && !User.IsInRole("Admin"))
             {
                 <div class="form-group">
@@ -51,7 +49,7 @@
             else
             {
                 <div class="form-group">
-                    <label asp-for="RenterId" class="control-label"></label>
+                    <label for="RenterId" class="control-label">Renter</label>
                     <select asp-for="RenterId" class="form-control" asp-items="ViewBag.RenterId"></select>
                 </div>
             }

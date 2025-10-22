@@ -115,9 +115,18 @@ namespace QuickRentProject.Controllers
             }
             else
             {
+                // Admin: dropdown only for users in Renter role
+                var renterRoleId = await _context.Roles
+                    .Where(r => r.Name == "Renter")
+                    .Select(r => r.Id)
+                    .FirstOrDefaultAsync();
+
                 var renters = await _context.Users.AsNoTracking()
-                    .Select(u => new { u.Id, Name = u.FirstName + " " + u.LastName })
+                    .Where(u => _context.UserRoles.Any(ur => ur.UserId == u.Id && ur.RoleId == renterRoleId))
+                    .OrderBy(u => u.LastName).ThenBy(u => u.FirstName)
+                    .Select(u => new { u.Id, Name = u.FirstName + " " + u.LastName + " (" + u.Email + ")" })
                     .ToListAsync();
+
                 ViewData["RenterId"] = new SelectList(renters, "Id", "Name");
             }
 
@@ -153,7 +162,7 @@ namespace QuickRentProject.Controllers
                 return RedirectToAction("Create", "Payments", new { bookingId = booking.BookingId });
             }
 
-            // rebuild lists on validation failure
+            // rebuild lists on validation failure (redisplay)
             var itemsQuery = _context.Item.AsNoTracking().Where(i => i.IsAvailable);
             ViewData["ItemId"] = new SelectList(await itemsQuery.ToListAsync(), "ItemId", "Name", booking.ItemId);
 
@@ -166,9 +175,17 @@ namespace QuickRentProject.Controllers
             }
             else
             {
+                var renterRoleId = await _context.Roles
+                    .Where(r => r.Name == "Renter")
+                    .Select(r => r.Id)
+                    .FirstOrDefaultAsync();
+
                 var renters = await _context.Users.AsNoTracking()
-                    .Select(u => new { u.Id, Name = u.FirstName + " " + u.LastName })
+                    .Where(u => _context.UserRoles.Any(ur => ur.UserId == u.Id && ur.RoleId == renterRoleId))
+                    .OrderBy(u => u.LastName).ThenBy(u => u.FirstName)
+                    .Select(u => new { u.Id, Name = u.FirstName + " " + u.LastName + " (" + u.Email + ")" })
                     .ToListAsync();
+
                 ViewData["RenterId"] = new SelectList(renters, "Id", "Name", booking.RenterId);
             }
 
@@ -197,10 +214,18 @@ namespace QuickRentProject.Controllers
             }
             else
             {
-                // Admin: dropdown with renter full names
+                // Admin: dropdown with renters only
+                var renterRoleId = await _context.Roles
+                    .Where(r => r.Name == "Renter")
+                    .Select(r => r.Id)
+                    .FirstOrDefaultAsync();
+
                 var renters = await _context.Users.AsNoTracking()
-                    .Select(u => new { u.Id, Name = u.FirstName + " " + u.LastName })
+                    .Where(u => _context.UserRoles.Any(ur => ur.UserId == u.Id && ur.RoleId == renterRoleId))
+                    .OrderBy(u => u.LastName).ThenBy(u => u.FirstName)
+                    .Select(u => new { u.Id, Name = u.FirstName + " " + u.LastName + " (" + u.Email + ")" })
                     .ToListAsync();
+
                 ViewData["RenterList"] = new SelectList(renters, "Id", "Name", booking.RenterId);
             }
 
@@ -263,9 +288,17 @@ namespace QuickRentProject.Controllers
             }
             else
             {
+                var renterRoleId = await _context.Roles
+                    .Where(r => r.Name == "Renter")
+                    .Select(r => r.Id)
+                    .FirstOrDefaultAsync();
+
                 var renters = await _context.Users.AsNoTracking()
-                    .Select(u => new { u.Id, Name = u.FirstName + " " + u.LastName })
+                    .Where(u => _context.UserRoles.Any(ur => ur.UserId == u.Id && ur.RoleId == renterRoleId))
+                    .OrderBy(u => u.LastName).ThenBy(u => u.FirstName)
+                    .Select(u => new { u.Id, Name = u.FirstName + " " + u.LastName + " (" + u.Email + ")" })
                     .ToListAsync();
+
                 ViewData["RenterList"] = new SelectList(renters, "Id", "Name", booking.RenterId);
             }
             return View(booking);
