@@ -1,4 +1,5 @@
-﻿<style>
+﻿@using System.Security.Claims
+<style>
     body {
         background: #F4F4F4;
     }
@@ -146,6 +147,7 @@
     ViewData["Title"] = "Index";
     var currentSort = (string)(ViewData["CurrentSort"] ?? "rating_asc");
     var currentFilter = (string)(ViewData["CurrentFilter"] ?? "");
+    var currentUserId = User.Identity.IsAuthenticated ? User.FindFirstValue(ClaimTypes.NameIdentifier) : null;
 }
 
 <h1 class="items-title">Reviews</h1>
@@ -265,6 +267,7 @@
     </thead>
     <tbody>
 @foreach (var item in Model) {
+        var canModify = User.IsInRole("Admin") || (currentUserId != null && item.UserId == currentUserId);
         <tr>
             <td>
                 @{
@@ -278,18 +281,24 @@
             <td>@(item.Item != null ? item.Item.Name : item.ItemId.ToString())</td>
             <td>@(item.User != null ? $"{item.User.FirstName} {item.User.LastName}" : item.UserId)</td>
             <td class="actions-cell">
-    <div class="actions">
-        <a asp-action="Edit" asp-route-id="@item.ReviewId" class="vue-btn edit">
-            <img class="button" src="~/images/edit.jpg" alt="Edit" />
-        </a>
-        <a asp-action="Details" asp-route-id="@item.ReviewId" class="vue-btn details">
-            <img class="button" src="~/images/Details.jpg" alt="Details" />
-        </a>
-        <a asp-action="Delete" asp-route-id="@item.ReviewId" class="vue-btn delete">
-            <img class="button" src="~/images/Delete.jpg" alt="Delete" />
-        </a>
-    </div>
-</td>
+                <div class="actions">
+                    @if (canModify)
+                    {
+                        <a asp-action="Edit" asp-route-id="@item.ReviewId" class="vue-btn edit">
+                            <img class="button" src="~/images/edit.jpg" alt="Edit" />
+                        </a>
+                    }
+                    <a asp-action="Details" asp-route-id="@item.ReviewId" class="vue-btn details">
+                        <img class="button" src="~/images/Details.jpg" alt="Details" />
+                    </a>
+                    @if (canModify)
+                    {
+                        <a asp-action="Delete" asp-route-id="@item.ReviewId" class="vue-btn delete">
+                            <img class="button" src="~/images/Delete.jpg" alt="Delete" />
+                        </a>
+                    }
+                </div>
+            </td>
         </tr>
 }
     </tbody>
