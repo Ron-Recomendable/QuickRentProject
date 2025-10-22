@@ -86,12 +86,11 @@ namespace QuickRentProject.Controllers
             return View(payment);
         }
 
-        // IMPORTANT: keep ONLY THIS ONE GET action to avoid AmbiguousMatchException
+        // GET: Payments/Create
         [HttpGet]
         [Authorize(Roles = "Admin,Renter")]
         public async Task<IActionResult> Create(int? bookingId = null)
         {
-            // Build booking dropdown (existing logic)
             if (User.IsInRole("Renter") && !User.IsInRole("Admin"))
             {
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -124,7 +123,7 @@ namespace QuickRentProject.Controllers
                 ViewData["BookingId"] = new SelectList(allBookings, "BookingId", "Label", bookingId);
             }
 
-            // Prefill amount from booking if bookingId is provided (so renter won't have to type it)
+            // Prefill amount from booking, but do NOT lock it
             Payment model = new Payment { PaymentDate = DateTime.Now };
             if (bookingId.HasValue)
             {
@@ -139,8 +138,7 @@ namespace QuickRentProject.Controllers
                     }
 
                     model.BookingId = booking.BookingId;
-                    model.Amount = booking.TotalCost; // maintain amount from booking
-                    ViewBag.LockAmount = true;        // hint view to render as read-only
+                    model.Amount = booking.TotalCost;
 
                     // Set client min/max for date: StartDate .. EndDate + 7 days
                     ViewBag.PaymentMinDate = booking.StartDate.Date.ToString("yyyy-MM-dd");
@@ -166,11 +164,10 @@ namespace QuickRentProject.Controllers
                 if (booking == null || booking.RenterId != userId) return Forbid();
             }
 
-            // Always maintain amount server-side from the booking to prevent tampering
+            // Get booking for date validation (no longer overriding amount)
             var sourceBooking = await _context.Booking.AsNoTracking()
                 .FirstOrDefaultAsync(b => b.BookingId == payment.BookingId);
             if (sourceBooking == null) return NotFound();
-            payment.Amount = sourceBooking.TotalCost;
 
             // Server-side date window: StartDate .. EndDate + 7 days
             var minDate = sourceBooking.StartDate.Date;
@@ -188,7 +185,7 @@ namespace QuickRentProject.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            // If validation failed, rebuild dropdown and client min/max
+            // rebuild dropdown and client min/max on validation failure
             if (User.IsInRole("Renter") && !User.IsInRole("Admin"))
             {
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -221,7 +218,6 @@ namespace QuickRentProject.Controllers
                 ViewData["BookingId"] = new SelectList(allBookings, "BookingId", "Label", payment.BookingId);
             }
 
-            ViewBag.LockAmount = true;
             ViewBag.PaymentMinDate = minDate.ToString("yyyy-MM-dd");
             ViewBag.PaymentMaxDate = maxDate.ToString("yyyy-MM-dd");
 
@@ -276,15 +272,12 @@ namespace QuickRentProject.Controllers
                 ViewData["BookingId"] = new SelectList(allBookings, "BookingId", "Label", payment.BookingId);
             }
 
-            // Set client min/max for date: StartDate .. EndDate + 7 days
+            // Client min/max for date: StartDate .. EndDate + 7 days
             if (payment.Booking != null)
             {
                 ViewBag.PaymentMinDate = payment.Booking.StartDate.Date.ToString("yyyy-MM-dd");
                 ViewBag.PaymentMaxDate = payment.Booking.EndDate.Date.AddDays(7).ToString("yyyy-MM-dd");
             }
-
-            // Lock amount on the Edit view like Create
-            ViewBag.LockAmount = true;
 
             return View(payment);
         }
@@ -311,12 +304,10 @@ namespace QuickRentProject.Controllers
                 if (targetBooking == null || targetBooking.RenterId != userId) return Forbid();
             }
 
-            // Enforce amount and date window based on selected booking
+            // Validate date window against selected booking (amount is user-controlled)
             var bookingForPayment = await _context.Booking.AsNoTracking()
                 .FirstOrDefaultAsync(b => b.BookingId == payment.BookingId);
             if (bookingForPayment == null) return NotFound();
-
-            payment.Amount = bookingForPayment.TotalCost;
 
             var minDate = bookingForPayment.StartDate.Date;
             var maxDate = bookingForPayment.EndDate.Date.AddDays(7);
@@ -341,7 +332,7 @@ namespace QuickRentProject.Controllers
                 }
             }
 
-            // Rebuild dropdown and client min/max if validation fails
+            // Rebuild dropdown and client min/max for redisplay
             if (User.IsInRole("Renter") && !User.IsInRole("Admin"))
             {
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -376,7 +367,6 @@ namespace QuickRentProject.Controllers
 
             ViewBag.PaymentMinDate = minDate.ToString("yyyy-MM-dd");
             ViewBag.PaymentMaxDate = maxDate.ToString("yyyy-MM-dd");
-            ViewBag.LockAmount = true;
 
             return View(payment);
         }
