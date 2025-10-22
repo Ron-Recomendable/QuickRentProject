@@ -83,13 +83,34 @@ namespace QuickRentProject.Controllers
             };
             ViewData["CategoryList"] = new SelectList(categories);
 
-            // Fix owner to the current user (show name, post hidden OwnerId)
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var user = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId);
-            var ownerFullName = user != null ? $"{user.FirstName} {user.LastName}" : userId;
+            if (User.IsInRole("Admin"))
+            {
+                // Admin can choose any Owner (exclude Renters/Admins)
+                var ownerRoleId = await _context.Roles
+                    .Where(r => r.Name == "Owner")
+                    .Select(r => r.Id)
+                    .FirstOrDefaultAsync();
 
-            ViewData["OwnerFullName"] = ownerFullName;
-            ViewData["OwnerId"] = userId;
+                var owners = await _context.Users
+                    .Where(u => _context.UserRoles.Any(ur => ur.UserId == u.Id && ur.RoleId == ownerRoleId))
+                    .OrderBy(u => u.LastName).ThenBy(u => u.FirstName)
+                    .Select(u => new { u.Id, Name = u.FirstName + " " + u.LastName + " (" + u.Email + ")" })
+                    .ToListAsync();
+
+                ViewData["OwnerList"] = new SelectList(owners, "Id", "Name");
+                ViewBag.CanPickOwner = true;
+            }
+            else
+            {
+                // Owner is fixed to current user
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var user = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId);
+                var ownerFullName = user != null ? $"{user.FirstName} {user.LastName}" : userId;
+
+                ViewData["OwnerFullName"] = ownerFullName;
+                ViewData["OwnerId"] = userId;
+                ViewBag.CanPickOwner = false;
+            }
 
             return View();
         }
@@ -100,9 +121,12 @@ namespace QuickRentProject.Controllers
         [Authorize(Roles = "Owner,Admin")]
         public async Task<IActionResult> Create([Bind("ItemId,Name,Description,Category,Price,IsAvailable,Location,OwnerId")] Item item)
         {
-            // Always set OwnerId to the current user
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            item.OwnerId = userId;
+            // Only force OwnerId for Owners; Admins can set OwnerId from owners list
+            if (!User.IsInRole("Admin"))
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                item.OwnerId = userId;
+            }
 
             if (!ModelState.IsValid)
             {
@@ -119,9 +143,30 @@ namespace QuickRentProject.Controllers
             };
             ViewData["CategoryList"] = new SelectList(categories, item.Category);
 
-            var user = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId);
-            ViewData["OwnerFullName"] = user != null ? $"{user.FirstName} {user.LastName}" : userId;
-            ViewData["OwnerId"] = userId;
+            if (User.IsInRole("Admin"))
+            {
+                var ownerRoleId = await _context.Roles
+                    .Where(r => r.Name == "Owner")
+                    .Select(r => r.Id)
+                    .FirstOrDefaultAsync();
+
+                var owners = await _context.Users
+                    .Where(u => _context.UserRoles.Any(ur => ur.UserId == u.Id && ur.RoleId == ownerRoleId))
+                    .OrderBy(u => u.LastName).ThenBy(u => u.FirstName)
+                    .Select(u => new { u.Id, Name = u.FirstName + " " + u.LastName + " (" + u.Email + ")" })
+                    .ToListAsync();
+
+                ViewData["OwnerList"] = new SelectList(owners, "Id", "Name", item.OwnerId);
+                ViewBag.CanPickOwner = true;
+            }
+            else
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var user = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId);
+                ViewData["OwnerFullName"] = user != null ? $"{user.FirstName} {user.LastName}" : userId;
+                ViewData["OwnerId"] = userId;
+                ViewBag.CanPickOwner = false;
+            }
 
             return View(item);
         }
@@ -163,7 +208,6 @@ namespace QuickRentProject.Controllers
                 if (item.OwnerId != userId) return Forbid();
             }
 
-            // Category dropdown (preselect current)
             var categories = new[]
             {
                 "Electronics","Clothing","Groceries","Furniture","Appliances","Stationery",
@@ -172,9 +216,28 @@ namespace QuickRentProject.Controllers
             };
             ViewData["CategoryList"] = new SelectList(categories, item.Category);
 
-            // Owner full name (read-only in view)
-            var owner = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == item.OwnerId);
-            ViewData["OwnerFullName"] = owner != null ? $"{owner.FirstName} {owner.LastName}" : item.OwnerId;
+            if (User.IsInRole("Admin"))
+            {
+                var ownerRoleId = await _context.Roles
+                    .Where(r => r.Name == "Owner")
+                    .Select(r => r.Id)
+                    .FirstOrDefaultAsync();
+
+                var owners = await _context.Users
+                    .Where(u => _context.UserRoles.Any(ur => ur.UserId == u.Id && ur.RoleId == ownerRoleId))
+                    .OrderBy(u => u.LastName).ThenBy(u => u.FirstName)
+                    .Select(u => new { u.Id, Name = u.FirstName + " " + u.LastName + " (" + u.Email + ")" })
+                    .ToListAsync();
+
+                ViewData["OwnerList"] = new SelectList(owners, "Id", "Name", item.OwnerId);
+                ViewBag.CanPickOwner = true;
+            }
+            else
+            {
+                var owner = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == item.OwnerId);
+                ViewData["OwnerFullName"] = owner != null ? $"{owner.FirstName} {owner.LastName}" : item.OwnerId;
+                ViewBag.CanPickOwner = false;
+            }
 
             return View(item);
         }
@@ -187,13 +250,13 @@ namespace QuickRentProject.Controllers
         {
             if (id != item.ItemId) return NotFound();
 
-            // Owners can only edit their own items, Admin can edit all
+            // Owners can only edit their own items; Admin can change OwnerId
             if (User.IsInRole("Owner") && !User.IsInRole("Admin"))
             {
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 var dbItem = await _context.Item.AsNoTracking().FirstOrDefaultAsync(i => i.ItemId == id);
                 if (dbItem == null || dbItem.OwnerId != userId) return Forbid();
-                item.OwnerId = userId; // Prevent changing ownership
+                item.OwnerId = userId; // Prevent changing ownership by Owner
             }
 
             if (!ModelState.IsValid)
@@ -211,7 +274,6 @@ namespace QuickRentProject.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            // Rebuild dropdowns on validation errors
             var categories = new[]
             {
                 "Electronics","Clothing","Groceries","Furniture","Appliances","Stationery",
@@ -220,8 +282,28 @@ namespace QuickRentProject.Controllers
             };
             ViewData["CategoryList"] = new SelectList(categories, item.Category);
 
-            var owner = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == item.OwnerId);
-            ViewData["OwnerFullName"] = owner != null ? $"{owner.FirstName} {owner.LastName}" : item.OwnerId;
+            if (User.IsInRole("Admin"))
+            {
+                var ownerRoleId = await _context.Roles
+                    .Where(r => r.Name == "Owner")
+                    .Select(r => r.Id)
+                    .FirstOrDefaultAsync();
+
+                var owners = await _context.Users
+                    .Where(u => _context.UserRoles.Any(ur => ur.UserId == u.Id && ur.RoleId == ownerRoleId))
+                    .OrderBy(u => u.LastName).ThenBy(u => u.FirstName)
+                    .Select(u => new { u.Id, Name = u.FirstName + " " + u.LastName + " (" + u.Email + ")" })
+                    .ToListAsync();
+
+                ViewData["OwnerList"] = new SelectList(owners, "Id", "Name", item.OwnerId);
+                ViewBag.CanPickOwner = true;
+            }
+            else
+            {
+                var owner = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == item.OwnerId);
+                ViewData["OwnerFullName"] = owner != null ? $"{owner.FirstName} {owner.LastName}" : item.OwnerId;
+                ViewBag.CanPickOwner = false;
+            }
 
             return View(item);
         }

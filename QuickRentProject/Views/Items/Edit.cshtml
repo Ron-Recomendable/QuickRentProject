@@ -82,13 +82,24 @@
             <input asp-for="Location" type="hidden" id="LocationHidden" />
             <span asp-validation-for="Location" class="text-danger"></span>
 
-            <!-- Owner shown as name, OwnerId kept in hidden input -->
-            <div class="form-group">
-                <label class="control-label">Owner Name</label>
-                <input type="text" class="form-control" value="@ViewBag.OwnerFullName" readonly />
-                <input type="hidden" asp-for="OwnerId" />
-                <span asp-validation-for="OwnerId" class="text-danger"></span>
-            </div>
+            <!-- Owner: Admin can change owner; Owner sees read-only -->
+            @if (ViewBag.CanPickOwner == true)
+            {
+                <div class="form-group">
+                    <label class="control-label">Owner</label>
+                    <select asp-for="OwnerId" class="form-control" asp-items="ViewBag.OwnerList"></select>
+                    <span asp-validation-for="OwnerId" class="text-danger"></span>
+                </div>
+            }
+            else
+            {
+                <div class="form-group">
+                    <label class="control-label">Owner</label>
+                    <input type="text" class="form-control" value="@ViewBag.OwnerFullName" readonly />
+                    <input type="hidden" asp-for="OwnerId" />
+                    <span asp-validation-for="OwnerId" class="text-danger"></span>
+                </div>
+            }
 
             <div class="form-group" style="margin-top:12px;">
                 <input type="submit" value="Save" class="btn btn-primary" />
