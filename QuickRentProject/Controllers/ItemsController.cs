@@ -22,12 +22,21 @@ namespace QuickRentProject.Controllers
         }
 
         // GET: Items
-        public async Task<IActionResult> Index(string sortOrder, string searchString)
+        public async Task<IActionResult> Index(string sortOrder, string searchString, string currentFilter, int? pageNumber)
         {
             ViewData["NameSortParm"] = String.IsNullOrEmpty(sortOrder) ? "name_desc" : "";
             ViewData["Category"] = sortOrder == "Category" ? "category_desc" : "Category";
             ViewData["CurrentFilter"] = searchString;
             ViewData["CurrentSort"] = string.IsNullOrEmpty(sortOrder) ? "name_asc" : sortOrder;
+
+            if (searchString != null)
+            {
+                pageNumber = 1;
+            }
+            else
+            {
+                searchString = currentFilter;
+            }
 
             IQueryable<Item> itemQuery = _context.Item.Include(i => i.Owner);
 
@@ -68,7 +77,9 @@ namespace QuickRentProject.Controllers
                     itemQuery = itemQuery.OrderBy(s => s.Name);
                     break;
             }
-            return View(await itemQuery.AsNoTracking().ToListAsync());
+
+            int pageSize = 10;
+            return View(await PaginatedList<Item>.CreateAsync(itemQuery.AsNoTracking(), pageNumber ?? 1, pageSize));
         }
 
         // GET: Items/Create

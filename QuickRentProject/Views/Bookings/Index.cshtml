@@ -135,7 +135,7 @@
     #vue-modern thead th:not(:first-child) { border-left: 1.5px solid #e3e3e3; }
     #vue-modern tbody td:not(:first-child) { border-left: 1.5px solid #e9e9e9; }
 </style>
-@model IEnumerable<QuickRentProject.Models.Booking>
+@model PaginatedList<QuickRentProject.Models.Booking>
 
 @{
     ViewData["Title"] = "Index";
@@ -281,10 +281,9 @@
 <table class="table" id="vue-modern" v-show="items.length">
     <thead>
         <tr>
-            <th>@Html.DisplayNameFor(model => model.StartDate)</th>
-            <th>@Html.DisplayNameFor(model => model.EndDate)</th>
-            <th>@Html.DisplayNameFor(model => model.TotalCost)</th>
-           
+            <th>@Html.DisplayNameFor(model => model[0].StartDate)</th>
+            <th>@Html.DisplayNameFor(model => model[0].EndDate)</th>
+            <th>@Html.DisplayNameFor(model => model[0].TotalCost)</th>
             <th>Renter Name</th>
             <th>Item Name</th>
             <th class="actions-header">Actions</th>
@@ -296,7 +295,6 @@
             <td>@Html.DisplayFor(modelItem => item.StartDate)</td>
             <td>@Html.DisplayFor(modelItem => item.EndDate)</td>
             <td>@Html.DisplayFor(modelItem => item.TotalCost)</td>
-            
             <td>@(item.Renter != null ? $"{item.Renter.FirstName} {item.Renter.LastName}" : item.RenterId)</td>
             <td>@(item.Item != null ? item.Item.Name : item.ItemId.ToString())</td>
             <td class="actions-cell">
@@ -314,6 +312,25 @@
 }
     </tbody>
 </table>
+
+@{
+    var prevDisabled = !Model.HasPreviousPage ? "disabled" : "";
+    var nextDisabled = !Model.HasNextPage ? "disabled" : "";
+}
+<a asp-action="Index"
+   asp-route-sortOrder="@ViewData["CurrentSort"]"
+   asp-route-pageNumber="@(Model.PageIndex - 1)"
+   asp-route-currentFilter="@ViewData["CurrentFilter"]"
+   class="btn btn-default @prevDisabled">
+    Previous
+</a>
+<a asp-action="Index"
+   asp-route-sortOrder="@ViewData["CurrentSort"]"
+   asp-route-pageNumber="@(Model.PageIndex + 1)"
+   asp-route-currentFilter="@ViewData["CurrentFilter"]"
+   class="btn btn-default @nextDisabled">
+    Next
+</a>
 
 @section Scripts {
     <script>

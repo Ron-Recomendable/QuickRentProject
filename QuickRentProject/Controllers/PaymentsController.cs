@@ -22,10 +22,19 @@ namespace QuickRentProject.Controllers
         }
 
         // GET: Payments
-        public async Task<IActionResult> Index(string sortOrder, string searchString)
+        public async Task<IActionResult> Index(string sortOrder, string searchString, string currentFilter, int? pageNumber)
         {
             ViewData["CurrentFilter"] = searchString;
             ViewData["CurrentSort"] = string.IsNullOrEmpty(sortOrder) ? "date_asc" : sortOrder;
+
+            if (searchString != null)
+            {
+                pageNumber = 1;
+            }
+            else
+            {
+                searchString = currentFilter;
+            }
 
             var payments = _context.Payment
                 .Include(p => p.Booking).ThenInclude(b => b.Renter)
@@ -62,7 +71,8 @@ namespace QuickRentProject.Controllers
                 default: payments = payments.OrderBy(p => p.PaymentDate); break;
             }
 
-            return View(await payments.AsNoTracking().ToListAsync());
+            int pageSize = 10;
+            return View(await PaginatedList<Payment>.CreateAsync(payments.AsNoTracking(), pageNumber ?? 1, pageSize));
         }
 
         // GET: Payments/Details/5

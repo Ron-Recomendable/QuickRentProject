@@ -23,10 +23,19 @@ namespace QuickRentProject.Controllers
 
         // GET: Reviews
         [AllowAnonymous]
-        public async Task<IActionResult> Index(string sortOrder, string searchString)
+        public async Task<IActionResult> Index(string sortOrder, string searchString, string currentFilter, int? pageNumber)
         {
             ViewData["CurrentFilter"] = searchString;
             ViewData["CurrentSort"] = string.IsNullOrEmpty(sortOrder) ? "rating_asc" : sortOrder;
+
+            if (searchString != null)
+            {
+                pageNumber = 1;
+            }
+            else
+            {
+                searchString = currentFilter;
+            }
 
             IQueryable<Review> reviews = _context.Review
                 .Include(r => r.Item)
@@ -56,7 +65,8 @@ namespace QuickRentProject.Controllers
                 default:             reviews = reviews.OrderBy(r => r.Rating); break;
             }
 
-            return View(await reviews.AsNoTracking().ToListAsync());
+            int pageSize = 10;
+            return View(await PaginatedList<Review>.CreateAsync(reviews.AsNoTracking(), pageNumber ?? 1, pageSize));
         }
 
         // GET: Reviews/Details/5

@@ -136,7 +136,7 @@
     .create:hover { background: #388e3c; color: #fff; }
 </style>
 @using System.Security.Claims
-@model IEnumerable<QuickRentProject.Models.Payment>
+@model PaginatedList<QuickRentProject.Models.Payment>
 
 @{
     ViewData["Title"] = "Index";
@@ -253,9 +253,9 @@
 <table class="table"  id="vue-modern" v-show="items.length">
     <thead>
         <tr>
-            <th>@Html.DisplayNameFor(model => model.Amount)</th>
-            <th>@Html.DisplayNameFor(model => model.PaymentDate)</th>
-            <th>@Html.DisplayNameFor(model => model.PaymentMethod)</th>
+            <th>@Html.DisplayNameFor(model => model[0].Amount)</th>
+            <th>@Html.DisplayNameFor(model => model[0].PaymentDate)</th>
+            <th>@Html.DisplayNameFor(model => model[0].PaymentMethod)</th>
             <th>Booking for</th>
             <th class="actions-header">Actions</th>
         </tr>
@@ -282,6 +282,25 @@
 }
     </tbody>
 </table>
+
+@{
+    var prevDisabled = !Model.HasPreviousPage ? "disabled" : "";
+    var nextDisabled = !Model.HasNextPage ? "disabled" : "";
+}
+<a asp-action="Index"
+   asp-route-sortOrder="@ViewData["CurrentSort"]"
+   asp-route-pageNumber="@(Model.PageIndex - 1)"
+   asp-route-currentFilter="@ViewData["CurrentFilter"]"
+   class="btn btn-default @prevDisabled">
+    Previous
+</a>
+<a asp-action="Index"
+   asp-route-sortOrder="@ViewData["CurrentSort"]"
+   asp-route-pageNumber="@(Model.PageIndex + 1)"
+   asp-route-currentFilter="@ViewData["CurrentFilter"]"
+   class="btn btn-default @nextDisabled">
+    Next
+</a>
 
 @section Scripts {
     <script>

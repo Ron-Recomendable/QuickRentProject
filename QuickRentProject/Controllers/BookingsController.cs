@@ -22,11 +22,20 @@ namespace QuickRentProject.Controllers
         }
 
         // GET: Bookings
-        public async Task<IActionResult> Index(string sortOrder, string searchString)
+        public async Task<IActionResult> Index(string sortOrder, string searchString, string currentFilter, int? pageNumber)
         {
             // Track the current filter and sort selection for the view
             ViewData["CurrentFilter"] = searchString;
             ViewData["CurrentSort"] = string.IsNullOrEmpty(sortOrder) ? "start_asc" : sortOrder;
+
+            if (searchString != null)
+            {
+                pageNumber = 1;
+            }
+            else
+            {
+                searchString = currentFilter;
+            }
 
             IQueryable<Booking> booking = _context.Booking
                 .Include(b => b.Item)
@@ -72,7 +81,8 @@ namespace QuickRentProject.Controllers
                     booking = booking.OrderBy(b => b.StartDate); break;
             }
 
-            return View(await booking.AsNoTracking().ToListAsync());
+            int pageSize = 10;
+            return View(await PaginatedList<Booking>.CreateAsync(booking.AsNoTracking(), pageNumber ?? 1, pageSize));
         }
 
         // GET: Bookings/Details/5
